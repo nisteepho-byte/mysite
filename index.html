@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nick — Projects</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="wrap">
+    <h1>Nick</h1>
+    <p class="sub">I build things in web, data, and operations.</p>
+    <nav>
+      <a href="#projects">Projects</a>
+      <a href="mailto:you@example.com">Contact</a>
+      <a href="#">Resume</a>
+    </nav>
+  </header>
+
+  <main class="wrap" id="projects">
+    <h2>Fun Projects</h2>
+    <div class="grid">
+      <a class="card" href="#">
+        <h3>Bananagrams (multiplayer)</h3>
+        <p>Real-time rooms + Socket.IO.</p>
+      </a>
+      <a class="card" href="#">
+        <h3>Vaporwave Horizon</h3>
+        <p>Pure CSS animated horizon.</p>
+      </a>
+    </div>
+  </main>
+
+  <footer class="wrap"><p>© <span id="y"></span> Nick</p></footer>
+  <script>document.getElementById('y').textContent = new Date().getFullYear()</script>
+</body>
+</html>
