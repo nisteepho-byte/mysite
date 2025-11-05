@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Culinary Creations — Nick Isteepho</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="wrap">
+    <a href="index.html" style="text-decoration:none;">← Back to Home</a>
+    <h1>Culinary Creations</h1>
+    <p class="sub">A collection of things I’ve cooked.</p>
+  </header>
+
+  <main class="wrap" id="gallery">
+    <div class="gallery-grid">
+      <img src="food1.jpg" alt="Croissants" />
+      <img src="food2.jpg" alt="Brownies" />
+      <img src="food3.jpg" alt="Cheesecake" />
+      <img src="food4.jpg" alt="Baguettes" />
+    </div>
+  </main>
+
+  <footer class="wrap">
+    <p>© <span id="y"></span> </p>
+  </footer>
+  <script>document.getElementById('y').textContent = new Date().getFullYear()</script>
+</body>
+</html>
