@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Baking Creations</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="wrap culinary-header">
+    <a href="index.html" class="home-icon" title="Back to Home">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6.5 6.5a.5.5 0 0 0 .708.708L2 7.207V14.5A1.5 1.5 0 0 0 3.5 16h9a1.5 1.5 0 0 0 1.5-1.5V7.207l.146.147a.5.5 0 0 0 .708-.708l-6.5-6.5z"/>
+      </svg>
+    </a>
+
+    <div class="header-text">
+      <h1>Baking Creations</h1>
+      <p class="sub">A collection of the most impressive things I’ve baked. Everything is made from scratch.</p>
+    </div>
+  </header>
+
+  <main class="wrap" id="gallery">
+    <div class="gallery-grid">
+      <img src="IMG_3736.jpg" alt="Homemade Croissants" />
+      <img src="IMG_7822.jpg" alt="Fresh Baguettes" />
+      <img src="IMG_3807.jpg" alt="Banana Bread with Chocolate Chips" />
+      <img src="IMG_1759.jpg" alt="Carrot Cupcakes" />
+      <img src="IMG_5764.jpg" alt="Chocolate Chip Cookies" />
+      <img src="IMG_3800.jpg" alt="Sourdough Loaf" />
+      <img src="IMG_1335.jpg" alt="Sister's Graduation Cake" />
+      <img src="IMG_3723.jpg" alt="Cinnamon Rolls" />
+    </div>
+  </main>
+
+  <footer class="wrap">
+    <p>© <span id="y"></span> Nick Isteepho</p>
+  </footer>
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
