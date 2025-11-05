@@ -21,13 +21,45 @@ a:hover{opacity:.9}
 .site-wrap{max-width:1000px;margin:0 auto;padding:20px}
 
 /* Top bar */
-.topbar{display:flex;align-items:center;gap:8px}
-.topbar .spacer{flex:1}
-.topbar .home {
-  font-size: 26px;       /* bigger house icon */
-  color: var(--fg);
-  opacity: .95;
+/* Centered navigation bar */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* centers the link group */
+  gap: 28px;               /* space between items */
+  padding: 14px 0;
+  position: relative;
+  z-index: 3000;
 }
+
+.topbar .spacer {
+  flex: 0; /* no more pushing links to one side */
+}
+.topbar .home {
+  position: absolute;
+  left: 20px;
+  font-size: 26px;
+  color: var(--fg);
+}
+
+#theme-toggle {
+  position: absolute;
+  right: 20px;
+  top: 12px;
+  font-size: 22px;
+  border-radius: 14px;
+}
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: var(--bg);
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  padding: 14px 0;
+  z-index: 5000;
+}
+.hero { margin-top: 70px; } /* to make room under the fixed bar */
 /* --- Nav links at top bar --- */
 .topbar .links {
   display: flex;
