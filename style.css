@@ -1,5 +1,5 @@
 /* ===== Base / Theme ===== */
-*{box-sizing:border-box}
+* { box-sizing: border-box; }
 :root{
   --bg:#0e1624;        /* dark navy */
   --panel:#0b1320;
@@ -10,162 +10,149 @@
   --accent:#7aa2ff;
   --radius:22px;
 }
-body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--fg)}
-body:not(.dark){
-  --bg:#ffffff; --panel:#f6f7fb; --fg:#111; --muted:#555; --card:#ffffff; --ring:#e6e8ef; --accent:#0b63ff;
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  background:var(--bg);
+  color:var(--fg);
 }
-a{color:var(--accent);text-decoration:none}
-a:hover{opacity:.9}
+body:not(.dark){
+  --bg:#ffffff; --panel:#f6f7fb; --fg:#111; --muted:#555;
+  --card:#ffffff; --ring:#e6e8ef; --accent:#0b63ff;
+}
+a{ color:var(--accent); text-decoration:none; }
+a:hover{ opacity:.9; }
+
+/* Smooth theme transition */
+html, body, .hero, .card, .footer {
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease;
+}
 
 /* ===== Layout ===== */
-.site-wrap{max-width:1000px;margin:0 auto;padding:20px}
+.site-wrap{ max-width:1000px; margin:0 auto; padding:20px; }
 
-/* Top bar */
-/* Centered navigation bar */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: center; /* centers the link group */
-  gap: 28px;               /* space between items */
-  padding: 14px 0;
-  position: relative;
-  z-index: 3000;
+/* ===== Top bar (fixed, centered links) ===== */
+.topbar{
+  position:fixed;
+  top:0; left:0; right:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;       /* center link group */
+  gap:28px;
+  padding:14px 0;
+  background:var(--bg);
+  box-shadow:0 2px 8px rgba(0,0,0,.25);
+  z-index:5000;
+}
+.topbar .spacer{ flex:0; }      /* no pushing */
+.topbar .links{
+  display:flex;
+  gap:24px;
+}
+.topbar .links a{
+  color:var(--fg);
+  font-weight:500;
+  border-bottom:1px solid transparent;
+  transition:border-color .15s ease;
+}
+.topbar .links a:hover{ border-bottom-color:currentColor; }
+body:not(.dark) .topbar .links a{ color:#111; }
+
+/* Pin home icon left */
+.topbar .home{
+  position:absolute;
+  left:20px;
+  font-size:26px;
+  color:var(--fg);
 }
 
-.topbar .spacer {
-  flex: 0; /* no more pushing links to one side */
-}
-.topbar .home {
-  position: absolute;
-  left: 20px;
-  font-size: 26px;
-  color: var(--fg);
-}
-
-#theme-toggle {
-  position: absolute;
-  right: 20px;
-  top: 12px;
-  font-size: 22px;
-  border-radius: 14px;
-}
-.topbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: var(--bg);
-  box-shadow: 0 2px 8px rgba(0,0,0,.25);
-  padding: 14px 0;
-  z-index: 5000;
-}
-.hero { margin-top: 70px; } /* to make room under the fixed bar */
-/* --- Nav links at top bar --- */
-.topbar .links {
-  display: flex;
-  gap: 24px;
-  margin-left: 24px;      /* space from the home icon */
-}
-.topbar .links a {
-  color: var(--fg);
-  font-weight: 500;
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: border-color .15s ease;
-}
-.topbar .links a:hover {
-  border-bottom-color: currentColor;
-}
-body:not(.dark) .topbar .links a {
-  color: #111;
-}
-/* Smooth theme transition */
-html, body, .hero, .card, .footer { transition: background-color .25s ease, color .25s ease, border-color .25s ease; }
-
-/* Put the switch in the corner */
+/* Theme button pinned right */
 #theme-toggle{
-  position: fixed;      /* corner, always visible */
-  top: 16px;
-  right: 16px;
-  z-index: 1000;
-  background: transparent;
-  border: 1px solid rgba(255,255,255,.2);
-  border-radius: 12px;
-  padding: 6px 10px;
-  color: var(--fg);
-  cursor: pointer;
-  line-height: 1;
+  position:absolute;
+  right:20px;
+  top:10px;
+  font-size:22px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:14px;
+  padding:8px 12px;
+  background:transparent;
+  color:var(--fg);
+  cursor:pointer;
+  z-index:6000;
 }
 body:not(.dark) #theme-toggle{
-  border-color: #ddd;
-  color: #333;
-  background: #fff;
-  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+  border-color:#ddd;
+  color:#333;
+  background:#fff;
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
 }
-#theme-toggle:hover { opacity: .9; }
-
-/* Make the star canvas not capture clicks */
-.hero #stars { pointer-events: none; }
-
-/* Ensure header icons sit above everything */
-.topbar { position: relative; z-index: 3000; }
-.topbar .home { font-size: 26px; }
-
-/* Keep the light switch above all layers and clickable */
-#theme-toggle {
-  position: fixed;
-  top: 16px; right: 16px;
-  z-index: 9999;
-  pointer-events: auto;
-  font-size: 22px;
-  padding: 8px 12px;
-  border-radius: 14px;
-}
+#theme-toggle:hover{ opacity:.9; }
 
 /* ===== Hero ===== */
-.hero{position:relative;height:340px;margin:18px 20px;border-radius:28px;background:linear-gradient(180deg, #0b1320 0%, #0e1624 100%);overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.25)}
-body:not(.dark) .hero{background:linear-gradient(180deg,#f6f7fb,#ffffff);box-shadow:0 10px 22px rgba(0,0,0,.06)}
-.hero #stars{position:absolute;inset:0;width:100%;height:100%}
-.hero-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding-top:30px}
+.hero{
+  position:relative;
+  height:340px;
+  margin:88px 20px 18px;          /* top margin makes room below fixed bar */
+  border-radius:28px;
+  background:linear-gradient(180deg,#0b1320 0%, #0e1624 100%);
+  overflow:hidden;
+  box-shadow:0 20px 40px rgba(0,0,0,.25);
+}
+body:not(.dark) .hero{
+  background:linear-gradient(180deg,#f6f7fb,#ffffff);
+  box-shadow:0 10px 22px rgba(0,0,0,.06);
+}
+.hero #stars{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+.hero-inner{
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:10px; text-align:center; padding-top:30px;
+}
 
-/* Avatar (big circle overlapping) */
-.avatar {
-  width: 180px;           /* increased size */
-  height: 180px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 6px solid var(--panel);
-  outline: 6px solid var(--ring);
-  box-shadow: 0 14px 36px rgba(0,0,0,.35);
-  margin-bottom: 6px;
+/* Avatar (big circle) */
+.avatar{
+  width:180px; height:180px;
+  border-radius:50%; object-fit:cover;
+  border:6px solid var(--panel);
+  outline:6px solid var(--ring);
+  box-shadow:0 14px 36px rgba(0,0,0,.35);
+  margin-bottom:6px;
 }
 
 /* Title + subtitle */
 .title{
-  letter-spacing: normal;   /* was .25em */
-  margin: 0;
-  font-size: 32px;          /* bump size if you want */
-  font-weight: 700;
+  letter-spacing:normal;
+  margin:0;
+  font-size:32px;
+  font-weight:700;
 }
-.tag{margin:0;color:var(--muted)}
-
-/* Links under hero */
-.links{display:flex;gap:18px;margin-top:4px}
-.links a{color:var(--fg);border-bottom:1px dashed rgba(255,255,255,.25)}
-body:not(.dark) .links a{color:#111;border-color:#bbb}
+.tag{ margin:0; color:var(--muted); }
 
 /* ===== Content ===== */
-h2{margin:28px 0 12px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-.card{
-  display:block;padding:16px;background:var(--card);border-radius:14px;
-  border:1px solid rgba(255,255,255,.08);
-  color:inherit;
+h2{ margin:28px 0 12px; }
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:14px;
 }
-body:not(.dark) .card{border-color:#e6e7ef}
-.card h3{margin:0 0 6px}
-.card p{margin:0;color:var(--muted)}
+.card{
+  display:block; padding:16px; background:var(--card); border-radius:14px;
+  border:1px solid rgba(255,255,255,.08); color:inherit;
+}
+body:not(.dark) .card{ border-color:#e6e7ef; }
+.card h3{ margin:0 0 6px; }
+.card p{ margin:0; color:var(--muted); }
 
-.footer{border-top:1px solid rgba(255,255,255,.08);margin-top:36px;padding:16px 0;color:var(--muted)}
-body:not(.dark) .footer{border-color:#eee}
+.footer{
+  border-top:1px solid rgba(255,255,255,.08);
+  margin-top:36px; padding:16px 0; color:var(--muted);
+}
+body:not(.dark) .footer{ border-color:#eee; }
 
+/* ===== Small screens ===== */
+@media (max-width: 520px){
+  .topbar .links{ gap:16px; flex-wrap:wrap; }
+  .hero{ height:360px; margin:96px 12px 18px; }
+  .avatar{ width:150px; height:150px; }
+  .title{ font-size:28px; }
+}
