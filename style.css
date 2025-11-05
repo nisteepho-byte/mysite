@@ -1,449 +1,359 @@
-/* ===== Base / Theme ===== */
-* { box-sizing: border-box; }
-:root{
-  --bg:#0e1624;        /* dark navy */
-  --panel:#0b1320;
-  --fg:#f2f5ff;        /* text */
-  --muted:#a8b1c7;
-  --card:#121c2e;
-  --ring:#1f2d4a;      /* avatar ring */
-  --accent:#7aa2ff;
-  --radius:22px;
-}
-body{
-  margin:0;
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-  background:var(--bg);
-  color:var(--fg);
-}
-body:not(.dark){
-  --bg:#ffffff; --panel:#f6f7fb; --fg:#111; --muted:#555;
-  --card:#ffffff; --ring:#e6e8ef; --accent:#0b63ff;
-}
-a{ color:var(--accent); text-decoration:none; }
-a:hover{ opacity:.9; }
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Econ Scenarios — Nick Isteepho</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="dark econ-page">
 
-/* Smooth theme transition */
-html, body, .hero, .card, .footer {
-  transition: background-color .25s ease, color .25s ease, border-color .25s ease;
-}
+  <!-- Page header w/ home icon (reuses your site styles) -->
+  <header class="wrap culinary-header">
+    <a href="index.html" class="home-icon" title="Back to Home">⌂</a>
+    <div class="header-text">
+      <h1>Econ Scenarios</h1>
+      <p class="sub">CSS-only macro sandbox. Pick a policy preset, choose horizon, and view KPIs, diagrams, distributional effects, risks, and assumptions. Switch to Compare to A/B two scenarios.</p>
+    </div>
+  </header>
 
-/* ===== Layout ===== */
-.site-wrap{ max-width:1000px; margin:0 auto; padding:20px; }
+  <main class="page">
 
-/* ===== Top bar (fixed, centered links) ===== */
-.topbar{
-  position:fixed;
-  top:0; left:0; right:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;       /* center link group */
-  gap:28px;
-  padding:14px 0;
-  background:var(--bg);
-  box-shadow:0 2px 8px rgba(0,0,0,.25);
-  z-index:5000;
-}
-.topbar .spacer{ flex:0; }      /* no pushing */
-.topbar .links{
-  display:flex;
-  gap:24px;
-}
-.topbar .links a{
-  color:var(--fg);
-  font-weight:500;
-  border-bottom:1px solid transparent;
-  transition:border-color .15s ease;
-}
-.topbar .links a:hover{ border-bottom-color:currentColor; }
-body:not(.dark) .topbar .links a{ color:#111; }
+    <!-- ======= MODE RADIOS (must come before sections) ======= -->
+    <input type="radio" name="mode" id="mode-single" checked>
+    <input type="radio" name="mode" id="mode-compare">
 
-/* Pin home icon left */
-.topbar .home{
-  position:absolute;
-  left:20px;
-  font-size:26px;
-  color:var(--fg);
-}
+    <div class="modes">
+      <label for="mode-single">Single</label>
+      <label for="mode-compare">Compare</label>
+    </div>
 
-/* Theme button pinned right */
-#theme-toggle{
-  position:absolute;
-  right:20px;
-  top:10px;
-  font-size:22px;
-  border:1px solid rgba(255,255,255,.2);
-  border-radius:14px;
-  padding:8px 12px;
-  background:transparent;
-  color:var(--fg);
-  cursor:pointer;
-  z-index:6000;
-}
-body:not(.dark) #theme-toggle{
-  border-color:#ddd;
-  color:#333;
-  background:#fff;
-  box-shadow:0 2px 10px rgba(0,0,0,.08);
-}
-#theme-toggle:hover{ opacity:.9; }
+    <!-- ======= SINGLE VIEW SETUP (radios must come before .single) ======= -->
+    <!-- Scenario radios -->
+    <input type="radio" name="sc" id="s1" checked>
+    <input type="radio" name="sc" id="s2">
+    <input type="radio" name="sc" id="s3">
+    <input type="radio" name="sc" id="s4">
+    <input type="radio" name="sc" id="s5">
+    <input type="radio" name="sc" id="s6">
+    <input type="radio" name="sc" id="s7">
+    <input type="radio" name="sc" id="s8">
 
-/* ===== Hero ===== */
-.hero{
-  position:relative;
-  height:340px;
-  margin:88px 20px 18px;          /* top margin makes room below fixed bar */
-  border-radius:28px;
-  background:linear-gradient(180deg,#0b1320 0%, #0e1624 100%);
-  overflow:hidden;
-  box-shadow:0 20px 40px rgba(0,0,0,.25);
-}
-body:not(.dark) .hero{
-  background:linear-gradient(180deg,#f6f7fb,#ffffff);
-  box-shadow:0 10px 22px rgba(0,0,0,.06);
-}
-.hero #stars{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
-.hero-inner{
-  position:absolute; inset:0;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:10px; text-align:center; padding-top:30px;
-}
+    <!-- Horizon radios -->
+    <input type="radio" name="h" id="h-short" checked>
+    <input type="radio" name="h" id="h-long">
 
-/* Avatar (big circle) */
-.avatar{
-  width:180px; height:180px;
-  border-radius:50%; object-fit:cover;
-  border:6px solid var(--panel);
-  outline:6px solid var(--ring);
-  box-shadow:0 14px 36px rgba(0,0,0,.35);
-  margin-bottom:6px;
-}
+    <section class="single">
+      <div class="single-wrap">
 
-/* Title + subtitle */
-.title{
-  letter-spacing:normal;
-  margin:0;
-  font-size:32px;
-  font-weight:700;
-}
-.tag{ margin:0; color:var(--muted); }
+        <aside class="sidebar panel">
+          <h3>Scenarios</h3>
+          <div class="group opts">
+            <label for="s1"><strong>1) Tax Cut + Rate Hold</strong> — Fiscal boost, neutral monetary</label>
+            <label for="s2"><strong>2) Tax Cut + Rate Hike</strong> — Offset by tighter money</label>
+            <label for="s3"><strong>3) Stimulus + Rate Hike</strong> — Demand push, anti-inflation stance</label>
+            <label for="s4"><strong>4) Austerity + Rate Cut</strong> — Contractionary fiscal, easing money</label>
+            <label for="s5"><strong>5) Neutral Baseline</strong> — No shocks, trend growth</label>
+            <label for="s6"><strong>6) Tariffs + Subsidies</strong> — Protection + industrial policy</label>
+            <label for="s7"><strong>7) Energy Shock + Stimulus</strong> — Supply hit + counter-cyclical spend</label>
+            <label for="s8"><strong>8) QE + Infrastructure</strong> — Balance-sheet expansion + capex</label>
+          </div>
 
-/* ===== Content ===== */
-h2{ margin:28px 0 12px; }
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:14px;
-}
-.card{
-  display:block; padding:16px; background:var(--card); border-radius:14px;
-  border:1px solid rgba(255,255,255,.08); color:inherit;
-}
-body:not(.dark) .card{ border-color:#e6e7ef; }
-.card h3{ margin:0 0 6px; }
-.card p{ margin:0; color:var(--muted); }
+          <h3>Horizon</h3>
+          <div class="horizon">
+            <label for="h-short">Short-run (0–4q)</label>
+            <label for="h-long">Long-run (5q+)</label>
+          </div>
 
-.footer{
-  border-top:1px solid rgba(255,255,255,.08);
-  margin-top:36px; padding:16px 0; color:var(--muted);
-}
-body:not(.dark) .footer{ border-color:#eee; }
+          <small>Stylized illustrations only — not forecasts.</small>
+        </aside>
 
-/* ===== Small screens ===== */
-@media (max-width: 520px){
-  .topbar .links{ gap:16px; flex-wrap:wrap; }
-  .hero{ height:360px; margin:96px 12px 18px; }
-  .avatar{ width:150px; height:150px; }
-  .title{ font-size:28px; }
-}
+        <section class="content">
 
-/* Culinary gallery */
-.gallery-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:16px;
-  margin-top:20px;
-}
-.gallery-grid img{
-  width:100%;
-  border-radius:12px;
-  object-fit:cover;
-  box-shadow:0 4px 12px rgba(0,0,0,0.15);
-  transition:transform .2s ease, box-shadow .2s ease;
-}
-.gallery-grid img:hover{
-  transform:scale(1.02);
-  box-shadow:0 6px 20px rgba(0,0,0,0.25);
-}
+          <!-- ================= KPI DASHBOARD ================= -->
+          <div class="kpi">
+            <!-- s1 short -->
+            <div class="box view s1 short">
+              <p class="k-title">Real GDP (q/q, ann.)</p>
+              <p class="k-val">+3.0%</p>
+              <div class="spark">
+                <svg viewBox="0 0 100 40" aria-label="GDP spark"><polyline points="0,26 20,24 40,22 60,18 80,16 100,15" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+              </div>
+            </div>
+            <div class="box view s1 short">
+              <p class="k-title">CPI (y/y)</p>
+              <p class="k-val">3.6%</p>
+              <div class="spark">
+                <svg viewBox="0 0 100 40"><polyline points="0,12 20,13 40,15 60,18 80,20 100,21" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+              </div>
+            </div>
+            <div class="box view s1 short">
+              <p class="k-title">Unemployment</p>
+              <p class="k-val">4.1%</p>
+              <div class="spark">
+                <svg viewBox="0 0 100 40"><polyline points="0,20 20,19 40,18 60,17 80,17 100,17" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+              </div>
+            </div>
+            <div class="box view s1 short">
+              <p class="k-title">Debt / GDP</p>
+              <p class="k-val">+1.4 pp</p>
+              <div class="spark">
+                <svg viewBox="0 0 100 40"><polyline points="0,18 20,18 40,19 60,20 80,21 100,22" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+              </div>
+            </div>
 
-/* --- Culinary Page Header Layout --- */
-.culinary-header {
-  position: relative;
-  padding-top: 60px;          /* pushes title down from very top */
-  margin-bottom: 28px;
-}
+            <!-- s1 long -->
+            <div class="box view s1 long"><p class="k-title">Real GDP (trend)</p><p class="k-val">+2.2%</p><div class="spark"><svg viewBox="0 0 100 40"><polyline points="0,22 20,21 40,21 60,20 80,20 100,20" fill="none" stroke="currentColor" stroke-width="2"/></svg></div></div>
+            <div class="box view s1 long"><p class="k-title">CPI (y/y)</p><p class="k-val">2.6%</p><div class="spark"><svg viewBox="0 0 100 40"><polyline points="0,20 20,19 40,19 60,18 80,18 100,18" fill="none" stroke="currentColor" stroke-width="2"/></svg></div></div>
+            <div class="box view s1 long"><p class="k-title">Unemployment</p><p class="k-val">4.3%</p><div class="spark"><svg viewBox="0 0 100 40"><polyline points="0,17 20,17 40,18 60,18 80,19 100,19" fill="none" stroke="currentColor" stroke-width="2"/></svg></div></div>
+            <div class="box view s1 long"><p class="k-title">Debt / GDP</p><p class="k-val">+3.8 pp</p><div class="spark"><svg viewBox="0 0 100 40"><polyline points="0,18 20,19 40,20 60,22 80,23 100,24" fill="none" stroke="currentColor" stroke-width="2"/></svg></div></div>
+          </div>
 
-.home-icon {
-  position: absolute;
-  top: 16px;                  /* places icon near top-left corner */
-  left: 16px;
-  color: var(--fg);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;                /* smaller icon circle */
-  height: 28px;
-  border-radius: 50%;
-  transition: background 0.2s ease, transform 0.15s ease;
-}
-.home-icon:hover {
-  background: rgba(255,255,255,0.1);
-  transform: scale(1.05);
-}
+          <!-- ================= DIAGRAMS ================= -->
+          <div class="card chart wide view s1 short">
+            <h4>IS–LM (Short-run)</h4>
+            <svg viewBox="0 0 600 320" aria-label="IS-LM diagram">
+              <rect x="50" y="20" width="520" height="250" fill="none" stroke="currentColor" opacity=".25"/>
+              <line x1="80" y1="240" x2="520" y2="60" stroke="currentColor" stroke-width="2"/>
+              <line x1="110" y1="240" x2="550" y2="60" stroke="currentColor" stroke-width="2" opacity=".4"/>
+              <line x1="80" y1="120" x2="520" y2="120" stroke="currentColor" stroke-width="2"/>
+              <text x="90" y="255" font-size="12">Y</text>
+              <text x="45" y="35" font-size="12">i</text>
+              <text x="520" y="75" font-size="12">IS'</text>
+              <text x="485" y="75" font-size="12" opacity=".5">IS</text>
+              <text x="520" y="115" font-size="12">LM</text>
+            </svg>
+            <p class="muted">Tax cuts shift IS → right; rate hold keeps LM flat in the short run.</p>
+          </div>
 
-/* Title and subtitle styling */
-.header-text {
-  text-align: center;
-}
-.header-text h1 {
-  margin: 0 0 6px;
-  font-size: 28px;
-  line-height: 1.2;
-}
-.header-text .sub {
-  margin: 0;
-  color: var(--muted);
-  font-size: 1rem;
-}
-/* --- Song Covers grid/cards --- */
-.track-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
-  gap:16px;
-  margin-top:20px;
-}
+          <div class="card chart wide view s1 long">
+            <h4>AD–AS (Long-run)</h4>
+            <svg viewBox="0 0 600 320" aria-label="AD-AS diagram">
+              <rect x="50" y="20" width="520" height="250" fill="none" stroke="currentColor" opacity=".25"/>
+              <line x1="120" y1="240" x2="520" y2="70" stroke="currentColor" stroke-width="2"/>
+              <line x1="150" y1="240" x2="550" y2="80" stroke="currentColor" stroke-width="2" opacity=".4"/>
+              <line x1="420" y1="250" x2="520" y2="40" stroke="currentColor" stroke-width="2"/>
+              <line x1="360" y1="260" x2="360" y2="40" stroke="currentColor" stroke-width="2" opacity=".5"/>
+              <text x="90" y="255" font-size="12">Y</text>
+              <text x="45" y="35" font-size="12">P</text>
+              <text x="520" y="85" font-size="12">AD'</text>
+              <text x="552" y="90" font-size="12" opacity=".5">AD</text>
+              <text x="520" y="48" font-size="12">AS</text>
+              <text x="347" y="35" font-size="12" opacity=".8">LRAS</text>
+            </svg>
+            <p class="muted">Near-term output lifts; price level higher; LR depends on productivity.</p>
+          </div>
 
-.track-card{
-  background: var(--card);
-  border: 1px solid #e6e7ef;
-  border-radius:12px;
-  padding:14px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.08);
-}
+          <!-- ================= DISTRIBUTIONAL EFFECTS ================= -->
+          <div class="card dist view s1 short">
+            <h4>Distributional Effects (Short-run)</h4>
+            <div class="dist-bars">
+              <div>Households</div><div class="bar" style="--w:60%"><span></span></div>
+              <div>Firms</div><div class="bar" style="--w:68%"><span></span></div>
+              <div>Gov Revenue</div><div class="bar" style="--w:35%"><span></span></div>
+              <div>Capital Spend</div><div class="bar" style="--w:40%"><span></span></div>
+            </div>
+            <p class="muted">Bar width ≈ relative change vs baseline.</p>
+          </div>
 
-.track-card audio{
-  width:100%;
-  display:block;
-  margin-bottom:10px;
-  border-radius:8px;
-}
+          <div class="card dist view s1 long">
+            <h4>Distributional Effects (Long-run)</h4>
+            <div class="dist-bars">
+              <div>Households</div><div class="bar" style="--w:52%"><span></span></div>
+              <div>Firms</div><div class="bar" style="--w:58%"><span></span></div>
+              <div>Gov Debt Load</div><div class="bar" style="--w:65%"><span></span></div>
+              <div>Investment</div><div class="bar" style="--w:50%"><span></span></div>
+            </div>
+            <p class="muted">LR includes deficit dynamics and crowd-out/crowd-in channels.</p>
+          </div>
 
-.track-title{
-  font-weight:700;
-  margin-bottom:6px;
-}
+          <!-- ================= RISKS ================= -->
+          <div class="card risks view s1 short">
+            <h4>Risks (Short-run)</h4>
+            <div class="tiles">
+              <div class="tile med">Inflation</div>
+              <div class="tile low">Credit</div>
+              <div class="tile med">FX</div>
+              <div class="tile low">Unemp</div>
+              <div class="tile med">Debt</div>
+              <div class="tile low">Trade</div>
+            </div>
+            <ul class="tight">
+              <li>Price pressure from demand; mitigated by rate stability.</li>
+              <li>Revenue shortfall widens near-term deficit.</li>
+            </ul>
+          </div>
 
-.track-desc{
-  margin:0;
-  color:var(--muted);
-  line-height:1.6;
-}
+          <div class="card risks view s1 long">
+            <h4>Risks (Long-run)</h4>
+            <div class="tiles">
+              <div class="tile med">Inflation</div>
+              <div class="tile med">Credit</div>
+              <div class="tile med">FX</div>
+              <div class="tile med">Unemp</div>
+              <div class="tile high">Debt</div>
+              <div class="tile low">Trade</div>
+            </div>
+            <ul class="tight">
+              <li>Debt sustainability depends on r–g and future consolidation.</li>
+              <li>Investment response tied to supply-side reforms.</li>
+            </ul>
+          </div>
 
-/* Optional: if you use an external link instead of audio */
-.track-link{
-  display:inline-block;
-  margin-bottom:10px;
-  text-decoration:none;
-  font-weight:600;
-  border-bottom:1px solid currentColor;
-}
-.track-link:hover{ opacity:.9; }
+          <!-- ======= Condensed panels for s2–s8 (structure mirrors s1) ======= -->
+          <div class="card chart wide view s2 short"><h4>IS–LM (Short-run)</h4>
+            <svg viewBox="0 0 600 320"><rect x="50" y="20" width="520" height="250" fill="none" stroke="currentColor" opacity=".25"/><line x1="110" y1="240" x2="550" y2="70" stroke="currentColor" stroke-width="2"/><line x1="120" y1="160" x2="560" y2="100" stroke="currentColor" stroke-width="2"/></svg>
+            <p class="muted">Fiscal push vs tighter money → muted growth; inflation contained.</p>
+          </div>
+          <div class="card dist view s2 short"><h4>Distribution</h4>
+            <div class="dist-bars"><div>Households</div><div class="bar" style="--w:48%"><span></span></div><div>Firms</div><div class="bar" style="--w:50%"><span></span></div><div>Gov Debt</div><div class="bar" style="--w:28%"><span></span></div><div>Investment</div><div class="bar" style="--w:44%"><span></span></div></div>
+          </div>
+          <div class="card risks view s2 short"><h4>Risks</h4>
+            <div class="tiles"><div class="tile low">Infl</div><div class="tile med">Credit</div><div class="tile med">FX</div><div class="tile med">Unemp</div><div class="tile med">Debt</div><div class="tile low">Trade</div></div>
+          </div>
 
-/* ===== ECON SCENARIOS (scoped by .econ-page) ===== */
-.econ-page .page{ max-width:1200px; margin:100px auto 48px; padding:0 20px; }
-.econ-page h1{ margin-bottom:6px; }
-.econ-page .sub{ color:var(--muted); margin:0 0 16px; }
+          <div class="card chart wide view s3 short"><h4>AD–AS (Short-run)</h4>
+            <svg viewBox="0 0 600 320"><rect x="50" y="20" width="520" height="250" fill="none" stroke="currentColor" opacity=".25"/><line x1="120" y1="240" x2="520" y2="70" stroke="currentColor" stroke-width="2"/><line x1="420" y1="250" x2="520" y2="40" stroke="currentColor" stroke-width="2"/></svg>
+            <p class="muted">Output up modestly; price pressure damped by hikes.</p>
+          </div>
+          <div class="card dist view s3 short"><h4>Distribution</h4>
+            <div class="dist-bars"><div>Households</div><div class="bar" style="--w:54%"><span></span></div><div>Firms</div><div class="bar" style="--w:46%"><span></span></div><div>Gov Debt</div><div class="bar" style="--w:42%"><span></span></div><div>Capex</div><div class="bar" style="--w:40%"><span></span></div></div>
+          </div>
+          <div class="card risks view s3 short"><h4>Risks</h4>
+            <div class="tiles"><div class="tile med">Infl</div><div class="tile med">Credit</div><div class="tile med">FX</div><div class="tile med">Unemp</div><div class="tile med">Debt</div><div class="tile low">Trade</div></div>
+          </div>
 
-/* Mode tabs */
-.econ-page .modes{ display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 16px; }
-.econ-page .modes label{
-  padding:8px 12px; border:1px solid rgba(255,255,255,.15);
-  border-radius:10px; cursor:pointer;
-}
+          <div class="card chart wide view s4 short"><h4>IS–LM (Short-run)</h4>
+            <svg viewBox="0 0 600 320"><rect x="50" y="20" width="520" height="250" fill="none" stroke="currentColor" opacity=".25"/><line x1="80" y1="240" x2="520" y2="60" stroke="currentColor" stroke-width="2" opacity=".4"/><line x1="50" y1="260" x2="490" y2="80" stroke="currentColor" stroke-width="2"/><line x1="80" y1="140" x2="520" y2="140" stroke="currentColor" stroke-width="2" opacity=".4"/><line x1="80" y1="110" x2="520" y2="110" stroke="currentColor" stroke-width="2"/></svg>
+            <p class="muted">Fiscal drag vs easing → disinflation, softer growth.</p>
+          </div>
+          <div class="card risks view s4 short"><h4>Risks</h4>
+            <div class="tiles"><div class="tile low">Infl</div><div class="tile low">Credit</div><div class="tile med">FX</div><div class="tile med">Unemp</div><div class="tile low">Debt</div><div class="tile low">Trade</div></div>
+          </div>
 
-/* Hide radios on this page */
-.econ-page input[type="radio"]{ position:absolute; opacity:0; pointer-events:none; }
+          <div class="card chart wide view s5 short"><h4>Baseline</h4>
+            <svg viewBox="0 0 600 320"><rect x="50" y="20" width="520" height="250" fill="none" stroke="currentColor" opacity=".25"/><line x1="80" y1="240" x2="520" y2="60" stroke="currentColor" stroke-width="2"/><line x1="80" y1="120" x2="520" y2="120" stroke="currentColor" stroke-width="2"/></svg>
+            <p class="muted">Trend growth, stable prices, neutral policy.</p>
+          </div>
 
-/* Active mode border */
-#mode-single:checked ~ .modes label[for="mode-single"],
-#mode-compare:checked ~ .modes label[for="mode-compare"]{ border-color:var(--accent); }
+          <div class="card chart wide view s6 short"><h4>Trade/Industry Mix</h4>
+            <svg viewBox="0 0 600 320"><rect x="50" y="20" width="520" height="250" fill="none" stroke="currentColor" opacity=".25"/><line x1="140" y1="240" x2="540" y2="90" stroke="currentColor" stroke-width="2"/><line x1="420" y1="250" x2="520" y2="60" stroke="currentColor" stroke-width="2"/></svg>
+            <p class="muted">Import prices up; targeted sectors supported; CPI sensitivity.</p>
+          </div>
+          <div class="card dist view s6 short"><h4>Distribution</h4>
+            <div class="dist-bars"><div>Tradables</div><div class="bar" style="--w:62%"><span></span></div><div>Consumers</div><div class="bar" style="--w:38%"><span></span></div><div>Budget</div><div class="bar" style="--w:45%"><span></span></div><div>Non-tradables</div><div class="bar" style="--w:48%"><span></span></div></div>
+          </div>
 
-/* Shells */
-.econ-page .single, .econ-page .compare{ display:none; }
-#mode-single:checked ~ .single{ display:block; }
-#mode-compare:checked ~ .compare{ display:block; }
+          <div class="card chart wide view s7 short"><h4>Supply Shock + Demand Support</h4>
+            <svg viewBox="0 0 600 320"><rect x="50" y="20" width="520" height="250" fill="none" stroke="currentColor" opacity=".25"/><line x1="160" y1="240" x2="520" y2="90" stroke="currentColor" stroke-width="2"/><line x1="380" y1="250" x2="520" y2="80" stroke="currentColor" stroke-width="2"/></svg>
+            <p class="muted">Stagflationary pressure; stimulus cushions output.</p>
+          </div>
+          <div class="card risks view s7 short"><h4>Risks</h4>
+            <div class="tiles"><div class="tile high">Infl</div><div class="tile med">Credit</div><div class="tile med">FX</div><div class="tile med">Unemp</div><div class="tile med">Debt</div><div class="tile low">Trade</div></div>
+          </div>
 
-/* Single layout */
-.econ-page .single-wrap{ display:grid; grid-template-columns: 320px 1fr; gap:16px; }
-.econ-page .panel{
-  background:var(--card); border:1px solid rgba(255,255,255,.10);
-  border-radius:14px; padding:14px;
-}
-.econ-page .sidebar h3{ margin:0 0 8px; }
-.econ-page .sidebar .group{ margin-bottom:16px; }
-.econ-page .sidebar .opts{ display:grid; gap:8px; }
-.econ-page .sidebar .opts label{
-  display:block; padding:8px 10px; border:1px solid rgba(255,255,255,.14);
-  border-radius:10px; cursor:pointer;
-}
-.econ-page .sidebar small{ color:var(--muted); display:block; margin-top:8px; }
+          <div class="card chart wide view s8 short"><h4>Balance-Sheet + Capex</h4>
+            <svg viewBox="0 0 600 320"><rect x="50" y="20" width="520" height="250" fill="none" stroke="currentColor" opacity=".25"/><line x1="120" y1="240" x2="520" y2="70" stroke="currentColor" stroke-width="2"/><line x1="420" y1="250" x2="520" y2="40" stroke="currentColor" stroke-width="2"/><line x1="360" y1="260" x2="360" y2="40" stroke="currentColor" stroke-width="2" opacity=".5"/></svg>
+            <p class="muted">Near-term demand + potential-growth lift from infra productivity.</p>
+          </div>
+          <div class="card dist view s8 long"><h4>Distribution (Long-run)</h4>
+            <div class="dist-bars"><div>Productivity</div><div class="bar" style="--w:66%"><span></span></div><div>Real Wages</div><div class="bar" style="--w:58%"><span></span></div><div>Debt</div><div class="bar" style="--w:50%"><span></span></div><div>Private Capex</div><div class="bar" style="--w:55%"><span></span></div></div>
+          </div>
 
-/* Horizon buttons */
-.econ-page .horizon{ display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
-.econ-page .horizon label{
-  padding:6px 10px; border:1px solid rgba(255,255,255,.14);
-  border-radius:10px; cursor:pointer;
-}
-#h-short:checked ~ .sidebar .horizon label[for="h-short"],
-#h-long:checked  ~ .sidebar .horizon label[for="h-long"]{ border-color:var(--accent); }
+        </section>
+      </div>
+    </section>
 
-/* Scenario active highlight */
-#s1:checked ~ .sidebar label[for="s1"],
-#s2:checked ~ .sidebar label[for="s2"],
-#s3:checked ~ .sidebar label[for="s3"],
-#s4:checked ~ .sidebar label[for="s4"],
-#s5:checked ~ .sidebar label[for="s5"],
-#s6:checked ~ .sidebar label[for="s6"],
-#s7:checked ~ .sidebar label[for="s7"],
-#s8:checked ~ .sidebar label[for="s8"]{ border-color:var(--accent); }
+    <!-- ======= COMPARE VIEW SETUP (radios must come before .compare) ======= -->
+    <!-- Compare radios (A) -->
+    <input type="radio" name="A" id="a1" checked>
+    <input type="radio" name="A" id="a2">
+    <input type="radio" name="A" id="a3">
+    <input type="radio" name="A" id="a4">
+    <input type="radio" name="A" id="a5">
+    <input type="radio" name="A" id="a6">
+    <input type="radio" name="A" id="a7">
+    <input type="radio" name="A" id="a8">
 
-/* Content grid */
-.econ-page .content{ display:grid; gap:16px; grid-template-columns: repeat(12, 1fr); }
-.econ-page .card{
-  background:var(--card); border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:14px;
-}
-.econ-page .card h4{ margin:0 0 8px; }
+    <!-- Compare radios (B) -->
+    <input type="radio" name="B" id="b1" checked>
+    <input type="radio" name="B" id="b2">
+    <input type="radio" name="B" id="b3">
+    <input type="radio" name="B" id="b4">
+    <input type="radio" name="B" id="b5">
+    <input type="radio" name="B" id="b6">
+    <input type="radio" name="B" id="b7">
+    <input type="radio" name="B" id="b8">
 
-/* KPI dashboard */
-.econ-page .kpi{ display:grid; grid-template-columns: repeat(4,1fr); gap:12px; grid-column:1/ -1; }
-.econ-page .kpi .box{ background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:12px; }
-.econ-page .k-title{ color:var(--muted); font-size:14px; margin:0 0 6px; }
-.econ-page .k-val{ font-weight:700; font-size:22px; margin:0; }
-.econ-page .spark{ margin-top:8px; height:42px; }
-.econ-page .chart{ grid-column:1/ span 6; }
-.econ-page .chart.wide{ grid-column:1/ -1; }
-.econ-page .chart svg{ width:100%; height:auto; display:block; }
+    <section class="compare">
+      <div class="wrap">
 
-/* Distribution / risks / notes */
-.econ-page .dist{ grid-column:7/ -1; }
-.econ-page .risks{ grid-column:1/ span 6; }
-.econ-page .notes{ grid-column:7/ -1; }
+        <!-- Column A -->
+        <div class="col colA panel">
+          <h3>Compare A</h3>
+          <div class="selector">
+            <div class="row">
+              <label for="a1">1</label><label for="a2">2</label><label for="a3">3</label><label for="a4">4</label>
+              <label for="a5">5</label><label for="a6">6</label><label for="a7">7</label><label for="a8">8</label>
+            </div>
+            <small>Pick a scenario to show in A.</small>
+          </div>
 
-/* Compare layout */
-.econ-page .compare .wrap{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
-.econ-page .compare .col{ display:grid; gap:16px; }
-.econ-page .selector{ display:grid; gap:10px; }
-.econ-page .selector .row{ display:flex; gap:8px; flex-wrap:wrap; }
-.econ-page .selector label{
-  padding:6px 10px; border:1px solid rgba(255,255,255,.14);
-  border-radius:10px; cursor:pointer;
-}
-.econ-page .selector small{ color:var(--muted); }
+          <div class="card viewA a1"><h4>A1 — Tax Cut + Rate Hold</h4>
+            <div class="kpi-mini">
+              <div class="box"><p class="k-mini-title">GDP</p><p class="k-mini-val">↑</p></div>
+              <div class="box"><p class="k-mini-title">CPI</p><p class="k-mini-val">↑</p></div>
+              <div class="box"><p class="k-mini-title">Unemp</p><p class="k-mini-val">↓</p></div>
+              <div class="box"><p class="k-mini-title">Debt/GDP</p><p class="k-mini-val">↑</p></div>
+            </div>
+          </div>
+          <div class="card viewA a2"><h4>A2 — Tax Cut + Rate Hike</h4>
+            <div class="kpi-mini"><div class="box"><p class="k-mini-title">GDP</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">CPI</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">Unemp</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">Debt</p><p class="k-mini-val">↑</p></div></div>
+          </div>
+          <div class="card viewA a3"><h4>A3 — Stimulus + Hike</h4>
+            <div class="kpi-mini"><div class="box"><p class="k-mini-title">GDP</p><p class="k-mini-val">↑</p></div><div class="box"><p class="k-mini-title">CPI</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">Unemp</p><p class="k-mini-val">↓</p></div><div class="box"><p class="k-mini-title">Debt</p><p class="k-mini-val">↑</p></div></div>
+          </div>
+          <div class="card viewA a4"><h4>A4 — Austerity + Cut</h4>
+            <div class="kpi-mini"><div class="box"><p class="k-mini-title">GDP</p><p class="k-mini-val">↓</p></div><div class="box"><p class="k-mini-title">CPI</p><p class="k-mini-val">↓</p></div><div class="box"><p class="k-mini-title">Unemp</p><p class="k-mini-val">↑</p></div><div class="box"><p class="k-mini-title">Debt</p><p class="k-mini-val">→</p></div></div>
+          </div>
+          <div class="card viewA a5"><h4>A5 — Neutral</h4>
+            <div class="kpi-mini"><div class="box"><p class="k-mini-title">GDP</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">CPI</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">Unemp</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">Debt</p><p class="k-mini-val">→</p></div></div>
+          </div>
+          <div class="card viewA a6"><h4>A6 — Tariffs + Subsidies</h4>
+            <div class="kpi-mini"><div class="box"><p class="k-mini-title">GDP</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">CPI</p><p class="k-mini-val">↑</p></div><div class="box"><p class="k-mini-title">Unemp</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">Debt</p><p class="k-mini-val">↑</p></div></div>
+          </div>
+          <div class="card viewA a7"><h4>A7 — Energy Shock + Stimulus</h4>
+            <div class="kpi-mini"><div class="box"><p class="k-mini-title">GDP</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">CPI</p><p class="k-mini-val">↑</p></div><div class="box"><p class="k-mini-title">Unemp</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">Debt</p><p class="k-mini-val">↑</p></div></div>
+          </div>
+          <div class="card viewA a8"><h4>A8 — QE + Infrastructure</h4>
+            <div class="kpi-mini"><div class="box"><p class="k-mini-title">GDP</p><p class="k-mini-val">↑</p></div><div class="box"><p class="k-mini-title">CPI</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">Unemp</p><p class="k-mini-val">↓</p></div><div class="box"><p class="k-mini-title">Debt</p><p class="k-mini-val">↑</p></div></div>
+          </div>
+        </div>
 
-/* Active borders (compare) */
-#a1:checked ~ .colA label[for="a1"],
-#a2:checked ~ .colA label[for="a2"],
-#a3:checked ~ .colA label[for="a3"],
-#a4:checked ~ .colA label[for="a4"],
-#a5:checked ~ .colA label[for="a5"],
-#a6:checked ~ .colA label[for="a6"],
-#a7:checked ~ .colA label[for="a7"],
-#a8:checked ~ .colA label[for="a8"]{ border-color:var(--accent); }
+        <!-- Column B -->
+        <div class="col colB panel">
+          <h3>Compare B</h3>
+          <div class="selector">
+            <div class="row">
+              <label for="b1">1</label><label for="b2">2</label><label for="b3">3</label><label for="b4">4</label>
+              <label for="b5">5</label><label for="b6">6</label><label for="b7">7</label><label for="b8">8</label>
+            </div>
+            <small>Pick a scenario to show in B.</small>
+          </div>
 
-#b1:checked ~ .colB label[for="b1"],
-#b2:checked ~ .colB label[for="b2"],
-#b3:checked ~ .colB label[for="b3"],
-#b4:checked ~ .colB label[for="b4"],
-#b5:checked ~ .colB label[for="b5"],
-#b6:checked ~ .colB label[for="b6"],
-#b7:checked ~ .colB label[for="b7"],
-#b8:checked ~ .colB label[for="b8"]{ border-color:var(--accent); }
+          <div class="card viewB b1"><h4>B1 — Tax Cut + Rate Hold</h4><div class="kpi-mini"><div class="box"><p class="k-mini-title">GDP</p><p class="k-mini-val">↑</p></div><div class="box"><p class="k-mini-title">CPI</p><p class="k-mini-val">↑</p></div><div class="box"><p class="k-mini-title">Unemp</p><p class="k-mini-val">↓</p></div><div class="box"><p class="k-mini-title">Debt</p><p class="k-mini-val">↑</p></div></div></div>
+          <div class="card viewB b2"><h4>B2 — Tax Cut + Rate Hike</h4><div class="kpi-mini"><div class="box"><p class="k-mini-title">GDP</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">CPI</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">Unemp</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">Debt</p><p class="k-mini-val">↑</p></div></div></div>
+          <div class="card viewB b3"><h4>B3 — Stimulus + Hike</h4><div class="kpi-mini"><div class="box"><p class="k-mini-title">GDP</p><p class="k-mini-val">↑</p></div><div class="box"><p class="k-mini-title">CPI</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">Unemp</p><p class="k-mini-val">↓</p></div><div class="box"><p class="k-mini-title">Debt</p><p class="k-mini-val">↑</p></div></div></div>
+          <div class="card viewB b4"><h4>B4 — Austerity + Cut</h4><div class="kpi-mini"><div class="box"><p class="k-mini-title">GDP</p><p class="k-mini-val">↓</p></div><div class="box"><p class="k-mini-title">CPI</p><p class="k-mini-val">↓</p></div><div class="box"><p class="k-mini-title">Unemp</p><p class="k-mini-val">↑</p></div><div class="box"><p class="k-mini-title">Debt</p><p class="k-mini-val">→</p></div></div></div>
+          <div class="card viewB b5"><h4>B5 — Neutral</h4><div class="kpi-mini"><div class="box"><p class="k-mini-title">GDP</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">CPI</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">Unemp</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">Debt</p><p class="k-mini-val">→</p></div></div></div>
+          <div class="card viewB b6"><h4>B6 — Tariffs + Subsidies</h4><div class="kpi-mini"><div class="box"><p class="k-mini-title">GDP</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">CPI</p><p class="k-mini-val">↑</p></div><div class="box"><p class="k-mini-title">Unemp</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">Debt</p><p class="k-mini-val">↑</p></div></div></div>
+          <div class="card viewB b7"><h4>B7 — Energy Shock + Stimulus</h4><div class="kpi-mini"><div class="box"><p class="k-mini-title">GDP</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">CPI</p><p class="k-mini-val">↑</p></div><div class="box"><p class="k-mini-title">Unemp</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">Debt</p><p class="k-mini-val">↑</p></div></div></div>
+          <div class="card viewB b8"><h4>B8 — QE + Infrastructure</h4><div class="kpi-mini"><div class="box"><p class="k-mini-title">GDP</p><p class="k-mini-val">↑</p></div><div class="box"><p class="k-mini-title">CPI</p><p class="k-mini-val">→</p></div><div class="box"><p class="k-mini-title">Unemp</p><p class="k-mini-val">↓</p></div><div class="box"><p class="k-mini-title">Debt</p><p class="k-mini-val">↑</p></div></div></div>
+        </div>
 
-/* Show/Hide (Single) */
-.econ-page .view{ display:none; }
-#s1:checked ~ #h-short:checked ~ .content .s1.short,
-#s1:checked ~ #h-long:checked  ~ .content .s1.long,
-#s2:checked ~ #h-short:checked ~ .content .s2.short,
-#s2:checked ~ #h-long:checked  ~ .content .s2.long,
-#s3:checked ~ #h-short:checked ~ .content .s3.short,
-#s3:checked ~ #h-long:checked  ~ .content .s3.long,
-#s4:checked ~ #h-short:checked ~ .content .s4.short,
-#s4:checked ~ #h-long:checked  ~ .content .s4.long,
-#s5:checked ~ #h-short:checked ~ .content .s5.short,
-#s5:checked ~ #h-long:checked  ~ .content .s5.long,
-#s6:checked ~ #h-short:checked ~ .content .s6.short,
-#s6:checked ~ #h-long:checked  ~ .content .s6.long,
-#s7:checked ~ #h-short:checked ~ .content .s7.short,
-#s7:checked ~ #h-long:checked  ~ .content .s7.long,
-#s8:checked ~ #h-short:checked ~ .content .s8.short,
-#s8:checked ~ #h-long:checked  ~ .content .s8.long{ display:block; }
+      </div>
+    </section>
 
-/* Compare: show A and B */
-.econ-page .viewA, .econ-page .viewB{ display:none; }
-#a1:checked ~ .colA .viewA.a1,
-#a2:checked ~ .colA .viewA.a2,
-#a3:checked ~ .colA .viewA.a3,
-#a4:checked ~ .colA .viewA.a4,
-#a5:checked ~ .colA .viewA.a5,
-#a6:checked ~ .colA .viewA.a6,
-#a7:checked ~ .colA .viewA.a7,
-#a8:checked ~ .colA .viewA.a8{ display:block; }
-
-#b1:checked ~ .colB .viewB.b1,
-#b2:checked ~ .colB .viewB.b2,
-#b3:checked ~ .colB .viewB.b3,
-#b4:checked ~ .colB .viewB.b4,
-#b5:checked ~ .colB .viewB.b5,
-#b6:checked ~ .colB .viewB.b6,
-#b7:checked ~ .colB .viewB.b7,
-#b8:checked ~ .colB .viewB.b8{ display:block; }
-
-/* KPI mini (compare) */
-.econ-page .kpi-mini{ display:grid; grid-template-columns: repeat(2,1fr); gap:10px; }
-.econ-page .kpi-mini .box{
-  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.10);
-  border-radius:10px; padding:10px;
-}
-.econ-page .k-mini-title{ color:var(--muted); font-size:12px; margin:0 0 6px; }
-.econ-page .k-mini-val{ font-weight:700; font-size:18px; margin:0; }
-
-/* Risk heat tiles */
-.econ-page .tiles{ display:grid; grid-template-columns: repeat(6,1fr); gap:6px; }
-.econ-page .tile{ text-align:center; font-size:12px; padding:6px; border-radius:8px; border:1px solid rgba(255,255,255,.1); }
-.econ-page .low{ background: rgba(56,211,159,.18); }
-.econ-page .med{ background: rgba(255,200,80,.18); }
-.econ-page .high{ background: rgba(255,107,107,.22); }
-
-/* Distribution bars */
-.econ-page .dist-bars{ display:grid; grid-template-columns: 120px 1fr; gap:8px; align-items:center; }
-.econ-page .bar{ height:10px; border-radius:6px; background: rgba(255,255,255,.06); position:relative; overflow:hidden; }
-.econ-page .bar > span{ position:absolute; inset:0; width:var(--w,50%); background:linear-gradient(90deg, var(--accent), rgba(122,162,255,.2)); }
-
-/* Helpers */
-.econ-page .muted{ color:var(--muted); margin:0; }
-.econ-page ul.tight{ margin:8px 0 0 18px; }
-.econ-page ul.tight li{ margin:4px 0; }
-
-/* Responsive */
-@media (max-width: 980px){
-  .econ-page .single-wrap{ grid-template-columns: 1fr; }
-  .econ-page .dist, .econ-page .risks, .econ-page .notes, .econ-page .chart{ grid-column: 1 / -1; }
-  .econ-page .compare .wrap{ grid-template-columns: 1fr; }
-}
-
-/* Optional polish: subtle glow on the home icon */
-.econ-page .home-icon:hover{
-  box-shadow: 0 0 0 6px rgba(122,162,255,0.16);
-}
-
+  </main>
+</body>
+</html>
