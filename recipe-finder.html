@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Recipe Finder — Nick</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+.page{ max-width: 1000px; margin: 100px auto 40px; padding: 0 20px; }
+.controls{ display:flex; gap:10px; flex-wrap:wrap; margin: 8px 0 14px; }
+.controls label{ padding:8px 12px; border:1px solid rgba(255,255,255,.15); border-radius:10px; cursor:pointer; }
+input[type="radio"]{ position:absolute; opacity:0; }
+.grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap:14px; }
+
+.card{ background: var(--card); border:1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 16px; }
+.card .tagline{ color: var(--muted); margin: 6px 0 0; }
+
+.panel{ display:none; }
+#all:checked ~ .panel.all,
+#veg:checked ~ .panel.veg,
+#quick:checked ~ .panel.quick,
+#five:checked ~ .panel.five,
+#vegquick:checked ~ .panel.vegquick { display:block; }
+
+.controls label::after{ content:""; width:8px; height:8px; border-radius:50%; background:var(--accent); display:inline-block; margin-left:6px; opacity:.2; }
+#all:checked ~ .controls label[for="all"],
+#veg:checked ~ .controls label[for="veg"],
+#quick:checked ~ .controls label[for="quick"],
+#five:checked ~ .controls label[for="five"],
+#vegquick:checked ~ .controls label[for="vegquick"] { border-color: var(--accent); }
+</style>
+</head>
+<body class="dark">
+  <main class="page">
+    <h1>Recipe Finder</h1>
+    <p class="tag">CSS-only “filters” via preset tabs.</p>
+
+    <input type="radio" name="tab" id="all" checked>
+    <input type="radio" name="tab" id="veg">
+    <input type="radio" name="tab" id="quick">
+    <input type="radio" name="tab" id="five">
+    <input type="radio" name="tab" id="vegquick">
+
+    <div class="controls">
+      <label for="all">All</label>
+      <label for="veg">Vegetarian</label>
+      <label for="quick">&lt; 30 min</label>
+      <label for="five">≤ 5 ingredients</label>
+      <label for="vegquick">Vegetarian + &lt; 30</label>
+    </div>
+
+    <!-- All -->
+    <section class="panel all">
+      <div class="grid">
+        <article class="card"><h3>Garlic Butter Pasta</h3><p class="tagline">≤ 5 ingredients • &lt; 30 min</p></article>
+        <article class="card"><h3>Veggie Stir-Fry</h3><p class="tagline">Vegetarian • &lt; 30 min</p></article>
+        <article class="card"><h3>Chocolate Mug Cake</h3><p class="tagline">Vegetarian • ≤ 5 ingredients</p></article>
+        <article class="card"><h3>Lemon Chicken Bowls</h3><p class="tagline">&lt; 30 min</p></article>
+      </div>
+    </section>
+
+    <!-- Vegetarian -->
+    <section class="panel veg">
+      <div class="grid">
+        <article class="card"><h3>Veggie Stir-Fry</h3><p class="tagline">Vegetarian • &lt; 30 min</p></article>
+        <article class="card"><h3>Chocolate Mug Cake</h3><p class="tagline">Vegetarian • ≤ 5 ingredients</p></article>
+      </div>
+    </section>
+
+    <!-- &lt; 30 -->
+    <section class="panel quick">
+      <div class="grid">
+        <article class="card"><h3>Garlic Butter Pasta</h3><p class="tagline">≤ 5 ingredients • &lt; 30 min</p></article>
+        <article class="card"><h3>Veggie Stir-Fry</h3><p class="tagline">Vegetarian • &lt; 30 min</p></article>
+        <article class="card"><h3>Lemon Chicken Bowls</h3><p class="tagline">&lt; 30 min</p></article>
+      </div>
+    </section>
+
+    <!-- 5 ingredients -->
+    <section class="panel five">
+      <div class="grid">
+        <article class="card"><h3>Garlic Butter Pasta</h3><p class="tagline">≤ 5 ingredients • &lt; 30 min</p></article>
+        <article class="card"><h3>Chocolate Mug Cake</h3><p class="tagline">Vegetarian • ≤ 5 ingredients</p></article>
+      </div>
+    </section>
+
+    <!-- Vegetarian + &lt; 30 -->
+    <section class="panel vegquick">
+      <div class="grid">
+        <article class="card"><h3>Veggie Stir-Fry</h3><p class="tagline">Vegetarian • &lt; 30 min</p></article>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
