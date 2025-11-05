@@ -57,7 +57,10 @@
     document.getElementById('y').textContent = new Date().getFullYear();
 
     // Theme toggle
-     <script>
+    <script>
+  // Year
+  document.getElementById('y').textContent = new Date().getFullYear();
+
   // --- Theme persistence + toggle ---
   const toggle = document.getElementById('theme-toggle');
 
@@ -65,13 +68,14 @@
     const dark = mode === 'dark';
     document.body.classList.toggle('dark', dark);
     localStorage.setItem('theme', dark ? 'dark' : 'light');
-    toggle.textContent = dark ? '☀︎' : '☾';              // sun in dark mode, moon in light mode
-    toggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
-    toggle.title = toggle.getAttribute('aria-label');
+    toggle.textContent = dark ? '☀︎' : '☾'; // sun in dark, moon in light
+    const msg = dark ? 'Switch to light mode' : 'Switch to dark mode';
+    toggle.setAttribute('aria-label', msg);
+    toggle.title = msg;
   }
 
-  // Initialize: from saved value, else system preference
-  (function initTheme(){
+  // Initialize: saved value > system preference
+  (function initTheme() {
     const saved = localStorage.getItem('theme');
     if (saved === 'dark' || saved === 'light') {
       setTheme(saved);
@@ -86,5 +90,36 @@
     const current = document.body.classList.contains('dark') ? 'dark' : 'light';
     setTheme(current === 'dark' ? 'light' : 'dark');
   });
-</script>
 
+  // --- Simple starfield (kept from earlier) ---
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let w, h, stars;
+
+  function resize() {
+    w = canvas.width = canvas.offsetWidth;
+    h = canvas.height = canvas.offsetHeight;
+    stars = Array.from({ length: Math.round((w * h) / 2500) }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      z: Math.random() * 0.8 + 0.2,
+      s: Math.random() * 1.8 + 0.2
+    }));
+  }
+
+  function step() {
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    for (const t of stars) {
+      ctx.globalAlpha = t.z;
+      ctx.fillRect(t.x, t.y, t.s, t.s);
+      t.x -= 0.15 * t.z; // drift
+      if (t.x < -2) { t.x = w + 2; t.y = Math.random() * h; }
+    }
+    requestAnimationFrame(step);
+  }
+
+  new ResizeObserver(resize).observe(canvas);
+  resize();
+  step();
+</script>
