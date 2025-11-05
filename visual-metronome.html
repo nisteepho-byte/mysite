@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Visual Metronome — Nick</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+.page{ max-width: 820px; margin:100px auto 40px; padding: 0 20px; }
+.controls{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.controls label{ padding:8px 12px; border:1px solid rgba(255,255,255,.15); border-radius:10px; cursor:pointer; }
+input[type="radio"]{ position:absolute; opacity:0; }
+
+.track {
+  background: var(--card); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:16px;
+}
+.grid {
+  position: relative;
+  display: grid; grid-template-columns: repeat(16, 1fr);
+  gap: 6px; margin-top: 12px;
+}
+.cell {
+  height: 26px; border-radius: 6px;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08);
+}
+.cell:nth-child(4n) { background: rgba(255,255,255,.10); }
+
+.playhead {
+  position: absolute; top: -6px; bottom: -6px; width: 2px;
+  background: var(--accent); opacity:.85; border-radius:1px;
+  animation-name: sweep; animation-timing-function: linear; animation-iteration-count: infinite;
+}
+@keyframes sweep { from { left: 0%; } to { left: 100%; } }
+
+/* Tempo selection via radio + sibling selectors */
+#b60:checked ~ .track .playhead { animation-duration: 2.4s; }   /* 60 BPM over 4 bars (approx visual) */
+#b90:checked ~ .track .playhead { animation-duration: 1.6s; }
+#b120:checked ~ .track .playhead { animation-duration: 1.2s; }
+
+#b60:checked ~ .controls label[for="b60"],
+#b90:checked ~ .controls label[for="b90"],
+#b120:checked ~ .controls label[for="b120"] { border-color: var(--accent); }
+</style>
+</head>
+<body class="dark">
+  <main class="page">
+    <h1>Visual Metronome</h1>
+    <p class="tag">CSS animation only. Choose a tempo and watch the playhead sweep a 4×4 pattern (16 steps).</p>
+
+    <input type="radio" name="bpm" id="b60" checked>
+    <input type="radio" name="bpm" id="b90">
+    <input type="radio" name="bpm" id="b120">
+
+    <div class="track">
+      <div class="grid">
+        <!-- 16 steps -->
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <span class="playhead" aria-hidden="true"></span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <label for="b60">60 BPM</label>
+      <label for="b90">90 BPM</label>
+      <label for="b120">120 BPM</label>
+    </div>
+  </main>
+</body>
+</html>
