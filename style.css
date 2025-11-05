@@ -53,6 +53,24 @@ body:not(.dark) #theme-toggle{
 }
 #theme-toggle:hover { opacity: .9; }
 
+/* Make the star canvas not capture clicks */
+.hero #stars { pointer-events: none; }
+
+/* Ensure header icons sit above everything */
+.topbar { position: relative; z-index: 3000; }
+.topbar .home { font-size: 26px; }
+
+/* Keep the light switch above all layers and clickable */
+#theme-toggle {
+  position: fixed;
+  top: 16px; right: 16px;
+  z-index: 9999;
+  pointer-events: auto;
+  font-size: 22px;
+  padding: 8px 12px;
+  border-radius: 14px;
+}
+
 /* ===== Hero ===== */
 .hero{position:relative;height:340px;margin:18px 20px;border-radius:28px;background:linear-gradient(180deg, #0b1320 0%, #0e1624 100%);overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.25)}
 body:not(.dark) .hero{background:linear-gradient(180deg,#f6f7fb,#ffffff);box-shadow:0 10px 22px rgba(0,0,0,.06)}
