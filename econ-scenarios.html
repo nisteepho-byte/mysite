@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Econ Scenarios</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+.page{ max-width: 900px; margin: 100px auto 40px; padding: 0 20px; }
+.tabs{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 14px; }
+.tabs label{
+  padding:8px 12px; border:1px solid rgba(255,255,255,.15);
+  border-radius:10px; cursor:pointer;
+}
+input[type="radio"]{ position:absolute; opacity:0; }
+.panel{ display:none; background: var(--card); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:16px; margin-top:14px; }
+#s1:checked ~ .panels #p1,
+#s2:checked ~ .panels #p2,
+#s3:checked ~ .panels #p3 { display:block; }
+
+.chart {
+  width:100%; max-width: 800px; margin-top: 10px;
+  background: linear-gradient(180deg,transparent,rgba(255,255,255,.03));
+  border-radius: 10px; padding: 10px;
+  border:1px dashed rgba(255,255,255,.12);
+}
+.chart svg { width:100%; height:auto; display:block; }
+small.note{ color: var(--muted); display:block; margin-top: 8px; }
+.tabs label::after{ content:""; display:inline-block; width:8px; height:8px; border-radius:50%; margin-left:6px; background: var(--accent); opacity:.2; }
+#s1:checked ~ .tabs label[for="s1"]{ border-color: var(--accent); }
+#s2:checked ~ .tabs label[for="s2"]{ border-color: var(--accent); }
+#s3:checked ~ .tabs label[for="s3"]{ border-color: var(--accent); }
+</style>
+</head>
+<body class="dark">
+  <main class="page">
+    <h1>Econ Scenarios</h1>
+    <p class="tag">Prewritten outcomes visualized with inline SVGs. CSS-only tabs.</p>
+
+    <input type="radio" name="s" id="s1" checked>
+    <input type="radio" name="s" id="s2">
+    <input type="radio" name="s" id="s3">
+
+    <div class="tabs">
+      <label for="s1">Cut Taxes</label>
+      <label for="s2">Raise Interest Rates</label>
+      <label for="s3">Stimulus Spending</label>
+    </div>
+
+    <div class="panels">
+      <section class="panel" id="p1">
+        <h3>Cut Taxes</h3>
+        <p>Short-run boost in output; mild inflationary pressure; deficit risk rises.</p>
+        <div class="chart">
+          <!-- Simple illustrative line chart -->
+          <svg viewBox="0 0 100 40" role="img" aria-label="Output rises">
+            <polyline points="0,25 25,24 50,20 75,14 100,12" fill="none" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <small class="note">Illustrative: Output trend after tax cuts.</small>
+        </div>
+      </section>
+
+      <section class="panel" id="p2">
+        <h3>Raise Interest Rates</h3>
+        <p>Inflation cools; growth moderates; unemployment risk increases in the short run.</p>
+        <div class="chart">
+          <svg viewBox="0 0 100 40" aria-label="Inflation falls">
+            <polyline points="0,12 25,14 50,18 75,24 100,28" fill="none" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <small class="note">Illustrative: Inflation trend post-hike (down is good).</small>
+        </div>
+      </section>
+
+      <section class="panel" id="p3">
+        <h3>Stimulus Spending</h3>
+        <p>Demand increases; output up; inflation can rise if economy is near capacity.</p>
+        <div class="chart">
+          <svg viewBox="0 0 100 40" aria-label="Output and prices up">
+            <polyline points="0,28 25,26 50,22 75,18 100,16" fill="none" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <small class="note">Illustrative: Output rises with potential price pressure.</small>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
