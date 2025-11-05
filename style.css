@@ -216,3 +216,46 @@ body:not(.dark) .footer{ border-color:#eee; }
   color: var(--muted);
   font-size: 1rem;
 }
+/* --- Song Covers grid/cards --- */
+.track-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:16px;
+  margin-top:20px;
+}
+
+.track-card{
+  background: var(--card);
+  border: 1px solid #e6e7ef;
+  border-radius:12px;
+  padding:14px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+.track-card audio{
+  width:100%;
+  display:block;
+  margin-bottom:10px;
+  border-radius:8px;
+}
+
+.track-title{
+  font-weight:700;
+  margin-bottom:6px;
+}
+
+.track-desc{
+  margin:0;
+  color:var(--muted);
+  line-height:1.6;
+}
+
+/* Optional: if you use an external link instead of audio */
+.track-link{
+  display:inline-block;
+  margin-bottom:10px;
+  text-decoration:none;
+  font-weight:600;
+  border-bottom:1px solid currentColor;
+}
+.track-link:hover{ opacity:.9; }
