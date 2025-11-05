@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lyric Memory Game — Nick</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+.page { max-width: 820px; margin: 100px auto 40px; padding: 0 20px; }
+.quiz { display: grid; gap: 16px; }
+.q {
+  background: var(--card); border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px; padding: 16px;
+}
+.q h3{ margin:0 0 10px; font-size:18px; }
+.opts { display: grid; grid-template-columns: repeat(2, minmax(140px,1fr)); gap: 10px; margin-top: 10px; }
+.opts label {
+  display: block; padding: 10px 12px; border:1px solid rgba(255,255,255,.12);
+  border-radius: 10px; cursor: pointer; background: transparent;
+}
+input[type="radio"]{ position:absolute; opacity:0; pointer-events:none; }
+.feedback { margin-top: 8px; font-weight: 600; display:none; }
+.feedback.ok { color: #38d39f; }
+.feedback.no { color: #ff6b6b; }
+input.correct:checked ~ .feedback.ok { display:block; }
+input.wrong:checked ~ .feedback.no { display:block; }
+details { margin-top: 8px; }
+details summary { cursor: pointer; color: var(--accent); }
+footer.page-foot { color: var(--muted); margin-top: 18px; font-size: 14px; }
+</style>
+</head>
+<body class="dark">
+  <main class="page">
+    <h1>Lyric Memory Game</h1>
+    <p class="tag">Guess which lyric line is <em>real</em> and which is made-up.</p>
+
+    <div class="quiz">
+
+      <!-- Question 1 -->
+      <div class="q">
+        <h3>1) “i know it’s logical, but i can’t let go” — Olivia Rodrigo, <em>logical</em></h3>
+        <div class="opts">
+          <label>
+            <input class="correct" type="radio" name="q1" />
+            Real
+          </label>
+          <label>
+            <input class="wrong" type="radio" name="q1" />
+            Made-up
+          </label>
+        </div>
+        <div class="feedback ok">Correct!</div>
+        <div class="feedback no">Try again.</div>
+        <details><summary>Why?</summary> This line (or close paraphrase) appears in the song’s hook/theme.</details>
+      </div>
+
+      <!-- Question 2 -->
+      <div class="q">
+        <h3>2) “girl, so confusing—love is an algorithm i keep misusing” — Charli XCX, <em>Girl, so confusing</em></h3>
+        <div class="opts">
+          <label>
+            <input class="wrong" type="radio" name="q2" />
+            Real
+          </label>
+          <label>
+            <input class="correct" type="radio" name="q2" />
+            Made-up
+          </label>
+        </div>
+        <div class="feedback ok">Correct!</div>
+        <div class="feedback no">Try again.</div>
+        <details><summary>Why?</summary> Fun line, but “algorithm” isn’t in the original lyric.</details>
+      </div>
+
+      <!-- Question 3 -->
+      <div class="q">
+        <h3>3) “now the party don’t start till i walk in” — Kesha, <em>TiK ToK</em> (not <em>Take It Off</em>)</h3>
+        <div class="opts">
+          <label>
+            <input class="wrong" type="radio" name="q3" />
+            From “Take It Off”
+          </label>
+          <label>
+            <input class="correct" type="radio" name="q3" />
+            From another song
+          </label>
+        </div>
+        <div class="feedback ok">Correct!</div>
+        <div class="feedback no">Try again.</div>
+        <details><summary>Why?</summary> It’s a Kesha lyric, but it’s from <em>TiK ToK</em>, not <em>Take It Off</em>.</details>
+      </div>
+
+    </div>
+
+    <footer class="page-foot">CSS-only: radio inputs + sibling selectors reveal feedback.</footer>
+  </main>
+</body>
+</html>
