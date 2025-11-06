@@ -1,110 +1,366 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Financials — Overview</title>
-  <link rel="stylesheet" href="../style.css"/>
-  <style>
-    .wrap{max-width:1000px;margin:90px auto 40px;padding:0 20px}
-    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    .search input{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:transparent;color:var(--fg)}
-    body:not(.dark) .search input{border-color:#e2e6ef;color:#111}
-    .btn{padding:10px 14px;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
-    .pill{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.15)}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:14px}
-    .card{display:block;background:var(--card);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:14px;color:inherit}
-    .muted{color:var(--muted)}
-    .home-icon{position:fixed;top:14px;left:16px;color:var(--fg);text-decoration:none}
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Financials — Single File</title>
+<link rel="stylesheet" href="style.css"/>
+<style>
+  /* minimal page-scoped styles; uses your global variables from style.css if present */
+  body.dark .home-icon{color:var(--fg)}
+  .wrap{max-width:1100px; margin:90px auto 40px; padding:0 20px}
+  .home-icon{position:fixed; top:14px; left:16px; text-decoration:none}
+  .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  input, button{
+    padding:10px 12px; border-radius:10px;
+    border:1px solid rgba(255,255,255,.18); background:transparent; color:var(--fg)
+  }
+  body:not(.dark) input, body:not(.dark) button{ border-color:#e2e6ef; color:#111 }
+  .btn{ cursor:pointer; border:1px solid var(--accent); background:var(--accent); color:#fff }
+  .muted{ color:var(--muted) }
+  .tabs{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 16px }
+  .tab{ padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.15); text-decoration:none; color:inherit }
+  .tab.active{ border-color:var(--accent) }
+  .cards{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:12px }
+  .card{ background:var(--card); border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:14px }
+  .pill{ display:inline-block; padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.15) }
+  table{ width:100%; border-collapse:collapse }
+  th,td{ padding:8px; border-bottom:1px solid rgba(255,255,255,.08); text-align:right }
+  th:first-child, td:first-child{ text-align:left }
+  .hidden{ display:none !important }
+  .ok{ color:#38d39f } .bad{ color:#ff6b6b }
+  .sep{ opacity:.2; border:none; border-top:1px solid rgba(255,255,255,.12); margin:14px 0 }
+  .status{ font-size:14px; }
+  .switch{ display:inline-flex; align-items:center; gap:8px }
+</style>
 </head>
 <body class="dark">
-  <a href="../index.html" class="home-icon" title="Back to Home">⌂</a>
+  <a class="home-icon" href="index.html" title="Back to Home">⌂</a>
 
   <main class="wrap">
     <h1>Financials</h1>
-    <p class="muted">Type any ticker (e.g., AAPL, MSFT, NVDA). The API key is stored locally in your browser.</p>
+    <p class="muted">Type any ticker (AAPL, MSFT, NVDA, TSLA, etc). Works offline with mock data; paste your FMP key to enable live data.</p>
 
-    <div class="row search" style="margin:10px 0 6px">
-      <input id="ticker" placeholder="Ticker (e.g., AAPL)" />
+    <!-- Controls -->
+    <div class="row" style="margin:8px 0">
+      <input id="ticker" placeholder="Ticker (e.g., AAPL)"/>
       <button id="open" class="btn">Open</button>
+      <span class="switch">
+        <input id="mock" type="checkbox"/>
+        <label for="mock">Use mock data</label>
+      </span>
     </div>
 
-    <p id="warn" class="muted" style="margin:6px 0 0"></p>
-    <div id="keybox" class="row" style="display:none;margin-top:8px">
-      <input id="keyin" placeholder="Paste your FMP API key"/>
+    <div class="row" id="keyrow" style="margin:6px 0">
+      <input id="keyin" placeholder="Paste FMP API key"/>
       <button id="savekey" class="btn">Save Key</button>
+      <button id="clearkey">Clear Key</button>
     </div>
 
-    <h2 style="margin-top:18px">Examples</h2>
-    <div id="examples" class="grid"></div>
+    <p id="status" class="status muted">Ready.</p>
+    <hr class="sep"/>
+
+    <!-- Tabs -->
+    <nav class="tabs">
+      <a href="#" data-tab="overview" class="tab active">Overview</a>
+      <a href="#" data-tab="statements" class="tab">Statements</a>
+      <a href="#" data-tab="ratios" class="tab">Ratios</a>
+    </nav>
+
+    <!-- Panels -->
+    <section id="panel-overview">
+      <div id="ov"></div>
+      <h3 style="margin-top:14px">Examples</h3>
+      <div class="cards" id="examples"></div>
+    </section>
+
+    <section id="panel-statements" class="hidden">
+      <div class="card"><h3>Income Statement (Annual)</h3><div id="inc"></div></div>
+      <div class="card" style="margin-top:12px"><h3>Balance Sheet (Annual)</h3><div id="bal"></div></div>
+      <div class="card" style="margin-top:12px"><h3>Cash Flow (Annual)</h3><div id="cf"></div></div>
+    </section>
+
+    <section id="panel-ratios" class="hidden">
+      <div class="card"><h3>Key Ratios</h3><div id="rt"></div></div>
+    </section>
   </main>
 
-  <script src="./api.js?v=3"></script>
+  <!-- Inline API client + app (no external files needed) -->
   <script>
-    const $t = document.getElementById('ticker');
-    const $open = document.getElementById('open');
-    const $warn = document.getElementById('warn');
-    const $keybox = document.getElementById('keybox');
-    const $keyin = document.getElementById('keyin');
-    const $savekey = document.getElementById('savekey');
-    const $examples = document.getElementById('examples');
+  // ------------------------ API CLIENT ------------------------
+  const FMP_BASE = "https://financialmodelingprep.com/api/v3";
+  let FMP_KEY = localStorage.getItem("FMP_KEY") || "";
+  function setKey(k){ if(!k||!k.trim()) return false; FMP_KEY=k.trim(); localStorage.setItem("FMP_KEY",FMP_KEY); return true; }
+  function clearKey(){ localStorage.removeItem("FMP_KEY"); FMP_KEY=""; }
+  const needKey = ()=> !FMP_KEY;
+  const q = (s)=> encodeURIComponent((s||"").trim().toUpperCase());
+  async function j(url){
+    const r = await fetch(url);
+    if (!r.ok){ throw new Error("HTTP "+r.status+" — "+url); }
+    return r.json();
+  }
+  async function profile(t){ const a = await j(\`\${FMP_BASE}/profile/\${q(t)}?apikey=\${FMP_KEY}\`); return a?.[0]||null; }
+  async function quote(t){ const a = await j(\`\${FMP_BASE}/quote/\${q(t)}?apikey=\${FMP_KEY}\`); return a?.[0]||null; }
+  async function income(t,limit=4){ return j(\`\${FMP_BASE}/income-statement/\${q(t)}?period=annual&limit=\${limit}&apikey=\${FMP_KEY}\`); }
+  async function balance(t,limit=4){ return j(\`\${FMP_BASE}/balance-sheet-statement/\${q(t)}?period=annual&limit=\${limit}&apikey=\${FMP_KEY}\`); }
+  async function cashflow(t,limit=4){ return j(\`\${FMP_BASE}/cash-flow-statement/\${q(t)}?period=annual&limit=\${limit}&apikey=\${FMP_KEY}\`); }
+  async function keyMetrics(t,limit=4){ return j(\`\${FMP_BASE}/key-metrics/\${q(t)}?period=annual&limit=\${limit}&apikey=\${FMP_KEY}\`); }
 
-    function showKeyUI(){
-      if (window.__FMP?.needKey()) {
-        $warn.textContent = "⚠️ Add your FMP API key to enable live data.";
-        $keybox.style.display = 'flex';
-      } else {
-        $warn.textContent = "";
-        $keybox.style.display = 'none';
-      }
+  // ------------------------ MOCK DATA ------------------------
+  const MOCK = {
+    AAPL: {
+      profile: { companyName:"Apple Inc.", sector:"Technology", industry:"Consumer Electronics" },
+      quote:   { price: 230.12, marketCap: 3_600_000_000_000 },
+      income: [
+        { date:"2024-09-28", revenue: 383_000_000_000, grossProfit: 170_000_000_000, operatingIncome: 115_000_000_000, netIncome: 97_000_000_000, eps: 6.46 },
+        { date:"2023-09-30", revenue: 383_285_000_000, grossProfit: 170_782_000_000, operatingIncome: 114_301_000_000, netIncome: 97_000_000_000, eps: 6.13 },
+        { date:"2022-09-24", revenue: 394_328_000_000, grossProfit: 170_782_000_000, operatingIncome: 119_437_000_000, netIncome: 99_803_000_000, eps: 6.11 },
+        { date:"2021-09-25", revenue: 365_817_000_000, grossProfit: 152_836_000_000, operatingIncome: 108_949_000_000, netIncome: 94_680_000_000, eps: 5.61 },
+      ],
+      balance: [
+        { date:"2024-09-28", cashAndCashEquivalents: 30_000_000_000, totalAssets: 350_000_000_000, totalLiabilities: 290_000_000_000, totalDebt: 120_000_000_000, totalStockholdersEquity: 60_000_000_000, totalCurrentAssets: 140_000_000_000, totalCurrentLiabilities: 120_000_000_000 },
+        { date:"2023-09-30", cashAndCashEquivalents: 29_965_000_000, totalAssets: 352_583_000_000, totalLiabilities: 290_437_000_000, totalDebt: 111_000_000_000, totalStockholdersEquity: 62_146_000_000, totalCurrentAssets: 143_566_000_000, totalCurrentLiabilities: 125_481_000_000 },
+        { date:"2022-09-24", cashAndCashEquivalents: 23_646_000_000, totalAssets: 352_755_000_000, totalLiabilities: 302_083_000_000, totalDebt: 120_000_000_000, totalStockholdersEquity: 50_672_000_000, totalCurrentAssets: 135_405_000_000, totalCurrentLiabilities: 153_982_000_000 },
+        { date:"2021-09-25", cashAndCashEquivalents: 34_940_000_000, totalAssets: 351_002_000_000, totalLiabilities: 287_912_000_000, totalDebt: 124_000_000_000, totalStockholdersEquity: 63_090_000_000, totalCurrentAssets: 134_836_000_000, totalCurrentLiabilities: 125_481_000_000 },
+      ],
+      cashflow: [
+        { date:"2024-09-28", netCashProvidedByOperatingActivities: 117_000_000_000, netCashUsedForInvestingActivities: -33_000_000_000, netCashUsedProvidedByFinancingActivities: -96_000_000_000, capitalExpenditure: -10_000_000_000, freeCashFlow: 107_000_000_000 },
+        { date:"2023-09-30", netCashProvidedByOperatingActivities: 110_000_000_000, netCashUsedForInvestingActivities: -22_000_000_000, netCashUsedProvidedByFinancingActivities: -100_000_000_000, capitalExpenditure: -11_000_000_000, freeCashFlow: 99_000_000_000 },
+        { date:"2022-09-24", netCashProvidedByOperatingActivities: 122_151_000_000, netCashUsedForInvestingActivities: -22_743_000_000, netCashUsedProvidedByFinancingActivities: -111_000_000_000, capitalExpenditure: -10_708_000_000, freeCashFlow: 111_443_000_000 },
+        { date:"2021-09-25", netCashProvidedByOperatingActivities: 104_414_000_000, netCashUsedForInvestingActivities: -14_545_000_000, netCashUsedProvidedByFinancingActivities: -93_353_000_000, capitalExpenditure: -11_085_000_000, freeCashFlow: 93_329_000_000 },
+      ],
+      metrics: [
+        { date:"2024-09-28", roe: 1.62, roa: 0.28, debtToEquity: 2.00, assetTurnover: 1.10, peRatio: 35.1, priceToSalesRatio: 9.1 },
+        { date:"2023-09-30", roe: 1.56, roa: 0.27, debtToEquity: 1.79, assetTurnover: 1.09, peRatio: 30.4, priceToSalesRatio: 7.8 },
+        { date:"2022-09-24", roe: 1.97, roa: 0.28, debtToEquity: 2.37, assetTurnover: 1.12, peRatio: 26.5, priceToSalesRatio: 6.6 },
+        { date:"2021-09-25", roe: 1.50, roa: 0.27, debtToEquity: 1.97, assetTurnover: 1.04, peRatio: 28.5, priceToSalesRatio: 7.3 },
+      ]
     }
-    showKeyUI();
+  };
 
-    $savekey.addEventListener('click', ()=>{
-      if (window.__FMP?.setFmpKey($keyin.value.trim())) {
-        $keyin.value = "";
-        showKeyUI();
-        location.reload(); // pull fresh with key
-      }
+  // ------------------------ UI HELPERS ------------------------
+  const $ = (s)=>document.querySelector(s);
+  const $$ = (s)=>[...document.querySelectorAll(s)];
+  const fmtB = (n)=> typeof n==="number" ? (n/1e9).toFixed(1)+"B" : "—";
+  const fmtC = (n)=> typeof n==="number" ? n.toLocaleString() : "—";
+  const Y = (d)=> (d||"").slice(0,4);
+
+  const els = {
+    ticker: $('#ticker'), open: $('#open'), mock: $('#mock'),
+    keyin: $('#keyin'), savekey: $('#savekey'), clearkey: $('#clearkey'),
+    status: $('#status'),
+    ov: $('#ov'), examples: $('#examples'),
+    inc: $('#inc'), bal: $('#bal'), cf: $('#cf'), rt: $('#rt'),
+    tabLinks: $$('.tab'),
+    pOverview: $('#panel-overview'), pStatements: $('#panel-statements'), pRatios: $('#panel-ratios')
+  };
+
+  // initial state
+  els.mock.checked = !FMP_KEY; // default to mock if no key
+  if (FMP_KEY) els.status.innerHTML = "API key detected ✓";
+  else els.status.innerHTML = "Mock mode enabled. Paste your key to fetch live data.";
+
+  // Tabs
+  els.tabLinks.forEach(a=>{
+    a.addEventListener('click', (e)=>{
+      e.preventDefault();
+      els.tabLinks.forEach(x=>x.classList.remove('active'));
+      a.classList.add('active');
+      const t = a.dataset.tab;
+      els.pOverview.classList.toggle('hidden', t!=='overview');
+      els.pStatements.classList.toggle('hidden', t!=='statements');
+      els.pRatios.classList.toggle('hidden', t!=='ratios');
     });
+  });
 
-    function go() {
-      const tk = ($t.value||"").trim();
-      if (!tk) return;
-      location.href = `./statements.html?t=${encodeURIComponent(tk)}`;
+  // Key actions
+  els.savekey.addEventListener('click', ()=>{
+    const ok = setKey(els.keyin.value.trim());
+    if (ok){
+      els.keyin.value = "";
+      els.mock.checked = false;
+      els.status.innerHTML = "Saved API key ✓  (reload or query a ticker)";
+    } else {
+      els.status.innerHTML = "<span class='bad'>Invalid key.</span>";
     }
-    $open.addEventListener('click', go);
-    $t.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  });
+  els.clearkey.addEventListener('click', ()=>{
+    clearKey();
+    els.mock.checked = true;
+    els.status.innerHTML = "Cleared API key. Mock mode enabled.";
+  });
 
-    async function loadExamples(){
-      if (window.__FMP?.needKey()) return;
-      const picks = ["AAPL","MSFT","NVDA","TSLA","AMZN","META"];
-      $examples.innerHTML = "";
-      for (const tk of picks) {
-        try {
-          const [p, q, is] = await Promise.all([
-            __FMP.profile(tk), __FMP.quote(tk), __FMP.income(tk,1)
-          ]);
-          const rev = is?.[0]?.revenue ?? null;
-          const net = is?.[0]?.netIncome ?? null;
-          const margin = (rev && net) ? ((net/rev)*100).toFixed(1)+"%" : "—";
-          $examples.insertAdjacentHTML("beforeend", `
-            <a class="card" href="./statements.html?t=${encodeURIComponent(tk)}">
-              <h3>${tk} — ${p?.companyName ?? ""}</h3>
-              <p class="muted">${p?.sector ?? ""}${p?.industry ? " • "+p.industry : ""}</p>
-              <div class="row" style="margin-top:8px">
-                <span class="pill">Price: <strong>${q?.price ?? "—"}</strong></span>
-                <span class="pill">MktCap: <strong>${q?.marketCap ? __FMP.b(q.marketCap) : "—"}</strong></span>
-                <span class="pill">Revenue: <strong>${rev ? __FMP.b(rev) : "—"}</strong></span>
-                <span class="pill">Net margin: <strong>${margin}</strong></span>
-              </div>
-            </a>
-          `);
-        } catch(e){/* ignore that card */}
+  // Search
+  els.open.addEventListener('click', ()=> loadAll((els.ticker.value||'').trim().toUpperCase()));
+  els.ticker.addEventListener('keydown', (e)=>{ if (e.key==='Enter') els.open.click(); });
+
+  // Overview examples (only if key present)
+  async function renderExamples(){
+    els.examples.innerHTML = "";
+    if (!FMP_KEY || els.mock.checked) return;
+    const picks = ["AAPL","MSFT","NVDA","TSLA","AMZN","META"];
+    for (const tk of picks){
+      try{
+        const [p,q,is] = await Promise.all([profile(tk),quote(tk),income(tk,1)]);
+        const rev = is?.[0]?.revenue, net = is?.[0]?.netIncome;
+        const margin = (rev && net) ? ((net/rev)*100).toFixed(1)+'%' : '—';
+        els.examples.insertAdjacentHTML('beforeend', `
+          <a class="card" href="#" onclick="document.getElementById('ticker').value='${tk}'; document.getElementById('open').click(); return false;">
+            <h3>${tk} — ${p?.companyName ?? ''}</h3>
+            <p class="muted">${p?.sector ?? ''}${p?.industry ? ' • '+p.industry : ''}</p>
+            <div class="row" style="margin-top:8px">
+              <span class="pill">Price: <strong>${q?.price ?? '—'}</strong></span>
+              <span class="pill">MktCap: <strong>${q?.marketCap ? fmtB(q.marketCap) : '—'}</strong></span>
+              <span class="pill">Revenue: <strong>${rev ? fmtB(rev) : '—'}</strong></span>
+              <span class="pill">Net margin: <strong>${margin}</strong></span>
+            </div>
+          </a>
+        `);
+      }catch(e){/* ignore that card */}
+    }
+  }
+  renderExamples();
+
+  // Core loader
+  async function loadAll(tk){
+    if (!tk){ els.status.innerHTML = "<span class='bad'>Enter a ticker.</span>"; return; }
+
+    const useMock = els.mock.checked || !FMP_KEY;
+    els.status.innerHTML = useMock ? "Using mock data…" : "Loading live data…";
+
+    try{
+      // fetch
+      let P,Q,IS,BAL,CF,KM;
+      if (useMock && MOCK[tk]){
+        ({profile:P, quote:Q, income:IS, balance:BAL, cashflow:CF, metrics:KM} = MOCK[tk]);
+      } else if (useMock && !MOCK[tk]){
+        // fallback to mock AAPL if unknown
+        ({profile:P, quote:Q, income:IS, balance:BAL, cashflow:CF, metrics:KM} = MOCK.AAPL);
+        tk = "AAPL";
+        els.ticker.value = "AAPL";
+        els.status.innerHTML = "No mock for that ticker; showing AAPL.";
+      } else {
+        // live
+        const [p,q,is,bal,cf,km] = await Promise.all([
+          profile(tk), quote(tk), income(tk,4), balance(tk,4), cashflow(tk,4), keyMetrics(tk,4)
+        ]);
+        P=p; Q=q; IS=is; BAL=bal; CF=cf; KM=km;
+      }
+
+      // sanity checks
+      if (!P || (!IS?.length) || (!BAL?.length) || (!CF?.length)){
+        els.status.innerHTML = \`<span class="bad">Could not load \${tk}. Check API key or ticker.</span>\`;
+        return;
+      }
+
+      // Overview card
+      const rev = IS[0]?.revenue, net = IS[0]?.netIncome;
+      const margin = (rev && net) ? ((net/rev)*100).toFixed(1)+'%' : '—';
+      els.ov.innerHTML = `
+        <div class="card">
+          <h2>${tk} — ${P.companyName || ''}</h2>
+          <p class="muted">${P.sector || ''}${P.industry ? ' • '+P.industry : ''}</p>
+          <div class="row" style="margin-top:8px">
+            <span class="pill">Price: <strong>${Q?.price ?? '—'}</strong></span>
+            <span class="pill">MktCap: <strong>${Q?.marketCap ? fmtB(Q.marketCap) : '—'}</strong></span>
+            <span class="pill">Revenue: <strong>${rev ? fmtB(rev) : '—'}</strong></span>
+            <span class="pill">Net margin: <strong>${margin}</strong></span>
+          </div>
+        </div>
+      `;
+
+      // Tables: helper
+      const years = IS.map(r=>Y(r.date));
+      const table = (cols, rows) => {
+        const head = `<thead><tr><th>Metric</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>`;
+        const body = rows.map(([name,vals])=>`<tr><td>${name}</td>${vals.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('');
+        return `<table>${head}<tbody>${body}</tbody></table>`;
+      };
+
+      // Income
+      els.inc.innerHTML = table(years, [
+        ["Revenue",        IS.map(r=>fmtC(r.revenue))],
+        ["Gross Profit",   IS.map(r=>fmtC(r.grossProfit))],
+        ["Operating Income", IS.map(r=>fmtC(r.operatingIncome))],
+        ["Net Income",     IS.map(r=>fmtC(r.netIncome))],
+        ["EPS (basic)",    IS.map(r=> (typeof r.eps==="number") ? r.eps.toFixed(2) : '—')],
+        ["Net Margin",     IS.map(r=> (r.revenue && r.netIncome) ? ((r.netIncome/r.revenue)*100).toFixed(1)+'%' : '—')]
+      ]);
+
+      // Balance
+      els.bal.innerHTML = table(years, [
+        ["Cash & Equivalents", BAL.map(r=>fmtC(r.cashAndCashEquivalents))],
+        ["Total Assets",       BAL.map(r=>fmtC(r.totalAssets))],
+        ["Total Liabilities",  BAL.map(r=>fmtC(r.totalLiabilities))],
+        ["Total Debt",         BAL.map(r=>fmtC(r.totalDebt))],
+        ["Shareholders' Equity", BAL.map(r=>fmtC(r.totalStockholdersEquity))],
+        ["Current Ratio",      BAL.map(r=>{
+          const cr = (r.totalCurrentAssets && r.totalCurrentLiabilities)
+            ? r.totalCurrentAssets / r.totalCurrentLiabilities : null;
+          return cr ? cr.toFixed(2) : '—';
+        })]
+      ]);
+
+      // Cash Flow
+      els.cf.innerHTML = table(years, [
+        ["Operating CF", CF.map(r=>fmtC(r.netCashProvidedByOperatingActivities))],
+        ["Investing CF", CF.map(r=>fmtC(r.netCashUsedForInvestingActivites ?? r.netCashUsedForInvestingActivities))],
+        ["Financing CF", CF.map(r=>fmtC(r.netCashUsedProvidedByFinancingActivities))],
+        ["Free CF",      CF.map(r=>{
+          if (typeof r.freeCashFlow === "number") return fmtC(r.freeCashFlow);
+          const op = r.netCashProvidedByOperatingActivities ?? 0;
+          const cap = r.capitalExpenditure ?? 0;
+          return fmtC(op - cap);
+        })],
+        ["CapEx",        CF.map(r=>fmtC(r.capitalExpenditure))]
+      ]);
+
+      // Ratios
+      const mByYear = {};
+      (KM||[]).forEach(m => { mByYear[Y(m.date)] = m; });
+      const pick = (key,fmt=(v)=>v)=> years.map(yr=>{
+        const v = mByYear[yr]?.[key];
+        if (v==null) return '—';
+        return fmt(v);
+      });
+      const roe = pick('roe', v=>(v*100).toFixed(1)+'%');
+      const roa = pick('roa', v=>(v*100).toFixed(1)+'%');
+      const de  = pick('debtToEquity', v=>v.toFixed(2));
+      const at  = pick('assetTurnover', v=>v.toFixed(2));
+      const pe  = pick('peRatio', v=>v.toFixed(1));
+      const ps  = pick('priceToSalesRatio', v=>v.toFixed(1));
+      const opm = IS.map(r=> (r.revenue && r.operatingIncome) ? ((r.operatingIncome/r.revenue)*100).toFixed(1)+'%' : '—');
+      const npm = IS.map(r=> (r.revenue && r.netIncome) ? ((r.netIncome/r.revenue)*100).toFixed(1)+'%' : '—');
+
+      els.rt.innerHTML = table(years, [
+        ["Operating Margin", opm],
+        ["Net Margin", npm],
+        ["ROE", roe],
+        ["ROA", roa],
+        ["Debt / Equity", de],
+        ["Asset Turnover", at],
+        ["P/E", pe],
+        ["P/S", ps]
+      ]);
+
+      els.status.innerHTML = \`Loaded \${tk} \${FMP_KEY && !els.mock.checked ? "from API ✓" : "(mock) ✓"}\`;
+
+      // switch to Statements tab automatically on first load
+      els.tabLinks.forEach(x=>x.classList.remove('active'));
+      document.querySelector('[data-tab="statements"]').classList.add('active');
+      els.pOverview.classList.add('hidden');
+      els.pStatements.classList.remove('hidden');
+      els.pRatios.classList.add('hidden');
+
+    } catch (e){
+      console.error(e);
+      if (!FMP_KEY && !els.mock.checked){
+        els.status.innerHTML = "<span class='bad'>No API key — enable mock mode or paste a key.</span>";
+      } else {
+        els.status.innerHTML = "<span class='bad'>Failed to load. Check API key, ticker, or network.</span>";
       }
     }
-    loadExamples();
+  }
   </script>
 </body>
 </html>
