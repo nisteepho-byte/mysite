@@ -37,4 +37,73 @@
       <div class="row"><label>Ticker</label><input id="t"></div>
       <div class="row"><label>FCF (latest, $B)</label><input id="fcf" type="number" step="0.1"></div>
       <div class="row"><label>Growth Y1–Y2 (%)</label><input id="g1" type="number" value="8"></div>
-      <div class="row"><label>Growth Y3–Y5 (%)</label><input id="g2" type="num
+      <div class="row"><label>Growth Y3–Y5 (%)</label><input id="g2" type="number" value="5"></div>
+      <div class="row"><label>Discount Rate (%)</label><input id="r" type="number" value="10"></div>
+      <div class="row"><label>Terminal Growth (%)</label><input id="gt" type="number" value="3"></div>
+      <div class="row"><label>Shares Out (B)</label><input id="sh" type="number" step="0.01"></div>
+      <div class="row"><label>Net Cash (B)</label><input id="nc" type="number" value="0"></div>
+      <button class="btn" id="calc">Recalculate</button>
+    </div>
+
+    <div class="card" id="out">
+      <h3>Result</h3>
+      <div class="big" id="ps">$0.00 / share</div>
+      <p class="muted" id="explain"></p>
+    </div>
+  </div>
+</main>
+
+<script src="./api.js"></script>
+<script>
+const tk = (new URLSearchParams(location.search).get('t')||'AAPL').toUpperCase();
+document.getElementById('title').textContent = `${tk} — Valuation`;
+const $t=document.getElementById('t'), $fcf=document.getElementById('fcf'), $g1=document.getElementById('g1'),
+      $g2=document.getElementById('g2'), $r=document.getElementById('r'), $gt=document.getElementById('gt'),
+      $sh=document.getElementById('sh'), $nc=document.getElementById('nc'),
+      $ps=document.getElementById('ps'), $ex=document.getElementById('explain');
+$t.value=tk;
+
+async function seed() {
+  try{
+    const [cf, metrics, bal] = await Promise.all([
+      __FMP.cashflow(tk,1), __FMP.keyMetrics(tk,1), __FMP.balance(tk,1)
+    ]);
+    const c0 = cf?.[0];
+    const fcfB = ((c0?.netCashProvidedByOperatingActivities||0) + (c0?.capitalExpenditure||0)) / 1e9;
+    $fcf.value = fcfB.toFixed(1);
+    const m0 = metrics?.[0];
+    const sharesB = (m0?.sharesOutstanding ?? 0) / 1e9;
+    $sh.value = sharesB ? sharesB.toFixed(2) : "10.00";
+    const cashB = (bal?.[0]?.cashAndCashEquivalents||0)/1e9 - (bal?.[0]?.totalDebt||0)/1e9;
+    $nc.value = cashB.toFixed(1);
+    calc();
+  } catch(e){
+    // fallback defaults if API blocked
+    $fcf.value = 20; $sh.value = 10; $nc.value = 0; calc();
+  }
+}
+
+function calc(){
+  const f0=+$fcf.value, g1=+$g1.value/100, g2=+$g2.value/100, r=+$r.value/100, gt=+$gt.value/100;
+  const sh=+$sh.value, nc=+$nc.value;
+  const f=[
+    f0*(1+g1),
+    f0*Math.pow(1+g1,2),
+    f0*Math.pow(1+g1,2)*(1+g2),
+    f0*Math.pow(1+g1,2)*Math.pow(1+g2,2),
+    f0*Math.pow(1+g1,2)*Math.pow(1+g2,3)
+  ];
+  const pv = f.map((v,i)=> v/Math.pow(1+r, i+1)).reduce((a,b)=>a+b,0);
+  const tv = f[4]*(1+gt)/(r-gt);
+  const pvTv = tv/Math.pow(1+r,5);
+  const ev = pv + pvTv;
+  const eq = ev + nc;
+  const per = eq/sh;
+  $ps.textContent = `$${per.toFixed(2)} / share`;
+  $ex.textContent = `PV(FCF 1–5): $${pv.toFixed(1)}B • PV(Terminal): $${pvTv.toFixed(1)}B • Net Cash: ${nc>=0?'+':''}$${nc.toFixed(1)}B • Shares: ${sh.toFixed(2)}B`;
+}
+document.getElementById('calc').onclick = calc;
+seed();
+</script>
+</body>
+</html>
