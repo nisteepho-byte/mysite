@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Financials — Statements</title>
+<link rel="stylesheet" href="../style.css" />
+<style>
+  .wrap{max-width:1100px;margin:90px auto 40px;padding:0 20px}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
+  .tabs a{padding:8px 12px;border:1px solid rgba(255,255,255,.15);border-radius:10px;color:inherit}
+  .tabs a.active{border-color:var(--accent)}
+  .card{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px}
+  .table{width:100%;border-collapse:separate;border-spacing:0 8px}
+  .table th,.table td{padding:8px 10px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+  .pill{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.15);font-size:12px}
+  .spark{height:28px}
+  .muted{color:var(--muted)}
+</style>
+</head>
+<body class="dark">
+  <header class="site-wrap topbar" style="position:fixed;left:0;right:0;top:0">
+    <a class="home" href="../index.html">⌂</a>
+    <div class="links">
+      <a href="./index.html">Overview</a>
+      <a href="./statements.html" style="border-bottom:1px solid currentColor">Statements</a>
+      <a href="./ratios.html">Ratios</a>
+      <a href="./valuation.html">Valuation</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1 id="title">Statements</h1>
+    <div class="row" id="statPills"></div>
+
+    <div class="tabs">
+      <a href="#" data-tab="is" class="active">Income Statement</a>
+      <a href="#" data-tab="bs">Balance Sheet</a>
+      <a href="#" data-tab="cf">Cash Flow</a>
+    </div>
+
+    <div id="view"></div>
+  </main>
+
+<script>
+const DB = {
+  AAPL:{ name:"Apple Inc.", years:["2024","2023","2022","2021"],
+    revenue:[383.3,383.3,394.3,365.8], cogs:[-213.0,-213.0,-223.5,-212.9], opIncome:[114.3,114.3,119.4,108.9],
+    netIncome:[97.0,97.0,99.8,94.7], assets:[352.5,352.8,352.8,351.0], equity:[74.1,62.2,50.7,63.1],
+    cfo:[110.5,110.5,122.2,104.0], capex:[-10.5,-10.5,-12.1,-11.1], cash:[30.5,29.9,23.6,34.9]
+  },
+  MSFT:{ name:"Microsoft Corp.", years:["2024","2023","2022","2021"],
+    revenue:[245.0,211.9,198.3,168.1], cogs:[-98.0,-82.0,-78.9,-72.3], opIncome:[107.0,88.5,83.4,69.9],
+    netIncome:[86.2,72.4,72.7,61.3], assets:[512.8,411.9,364.8,333.8], equity:[244.0,206.2,166.5,176.2],
+    cfo:[121.0,87.6,89.0,76.7], capex:[-22.0,-24.8,-23.9,-22.7], cash:[81.1,34.7,22.3,14.2]
+  }
+};
+const q = new URLSearchParams(location.search);
+const tk = (q.get('t')||'AAPL').toUpperCase();
+const d = DB[tk] || DB.AAPL;
+
+document.getElementById('title').textContent = `${tk} — ${d.name}`;
+document.getElementById('statPills').innerHTML = `
+  <span class="pill">Years: <strong>${d.years.join(' • ')}</strong></span>
+  <span class="pill">Latest Revenue: <strong>${d.revenue[0].toFixed(1)}B</strong></span>
+  <span class="pill">Net: <strong>${d.netIncome[0].toFixed(1)}B</strong></span>
+  <span class="pill">Cash: <strong>${d.cash[0].toFixed(1)}B</strong></span>
+`;
+
+const $view = document.getElementById('view');
+function tr(label, arr){
+  return `<tr><td class="muted">${label}</td>` + arr.map(v=>`<td>${(v>=0?'':'')}${v.toFixed(1)}</td>`).join('') + `</tr>`;
+}
+function spark(arr){
+  const max=Math.max(...arr), min=Math.min(...arr);
+  const pts = arr.map((v,i)=>{
+    const x=i*(100/(arr.length-1));
+    const y=28-((v-min)/(max-min||1))*28;
+    return `${x},${y}`;
+  }).join(' ');
+  return `<svg class="spark" viewBox="0 0 100 28"><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+}
+function render(tab){
+  document.querySelectorAll('.tabs a').forEach(a=>a.classList.toggle('active', a.dataset.tab===tab));
+  const cols = d.years.map(y=>`<th>${y}</th>`).join('');
+  if (tab==='is'){
+    $view.innerHTML = `
+      <div class="card">
+        <h3>Income Statement</h3>
+        ${spark(d.revenue)}
+        <table class="table">
+          <thead><tr><th></th>${cols}</tr></thead>
+          <tbody>
+            ${tr('Revenue (B)', d.revenue)}
+            ${tr('COGS (B)', d.cogs)}
+            ${tr('Operating Income (B)', d.opIncome)}
+            ${tr('Net Income (B)', d.netIncome)}
+            ${tr('Net Margin (%)', d.netIncome.map((n,i)=>n/d.revenue[i]*100))}
+          </tbody>
+        </table>
+      </div>`;
+  } else if (tab==='bs'){
+    $view.innerHTML = `
+      <div class="card">
+        <h3>Balance Sheet</h3>
+        ${spark(d.assets)}
+        <table class="table">
+          <thead><tr><th></th>${cols}</tr></thead>
+          <tbody>
+            ${tr('Total Assets (B)', d.assets)}
+            ${tr('Equity (B)', d.equity)}
+            ${tr('Cash & Equivalents (B)', d.cash)}
+            ${tr('Leverage (Assets/Equity)', d.assets.map((a,i)=>a/(d.equity[i]||0.1)))}
+          </tbody>
+        </table>
+      </div>`;
+  } else {
+    $view.innerHTML = `
+      <div class="card">
+        <h3>Cash Flow</h3>
+        ${spark(d.cfo)}
+        <table class="table">
+          <thead><tr><th></th>${cols}</tr></thead>
+          <tbody>
+            ${tr('Cash from Ops (B)', d.cfo)}
+            ${tr('Capex (B)', d.capex)}
+            ${tr('FCF (B)', d.cfo.map((v,i)=>v + d.capex[i]))}
+            ${tr('FCF Margin (%)', d.cfo.map((v,i)=>(v + d.capex[i]) / d.revenue[i] * 100))}
+          </tbody>
+        </table>
+      </div>`;
+  }
+}
+document.querySelectorAll('.tabs a').forEach(a=>{
+  a.addEventListener('click', e=>{ e.preventDefault(); render(a.dataset.tab); });
+});
+render('is');
+</script>
+</body>
+</html>
