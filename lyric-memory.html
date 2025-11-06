@@ -6,7 +6,7 @@
   <title>Lyric Memory — Nick Isteepho</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* Page-scoped tweaks (kept tiny; main styles in style.css section below) */
+    /* Page-scoped tweaks (kept tiny; main styles in style.css) */
     .lm-wrap{ max-width:1000px; margin:90px auto 40px; padding:0 20px; }
     .lm-grid{ display:grid; grid-template-columns: 320px 1fr; gap:16px; }
     @media (max-width: 980px){ .lm-grid{ grid-template-columns: 1fr; } }
@@ -39,6 +39,9 @@
     }
     body:not(.dark) .lm-edit textarea{ border-color:#e2e6ef; color:#111; }
     .lm-mini{ font-size:12px; color:var(--muted); }
+
+    /* tiny hover polish for the home icon (uses your existing .home-icon) */
+    .home-icon:hover{ background: rgba(255,255,255,0.08); border-radius:50%; }
   </style>
 </head>
 <body class="dark">
@@ -140,17 +143,14 @@
 
   <script>
   // ---------- Data & Helpers ----------
+  // Use clean, public-domain lines to avoid copyright + escaping issues.
   const sampleLines = [
-    // Public domain samples
-    "Amazing grace how sweet the sound",
-    "Twinkle twinkle little star how I wonder what you are",
-    "When the saints go marching in I want to be in that number",
-    "And then I go and spoil it all by saying somethin' stupid like I love you"
-    "Home home on the range where the deer and the antelope play",
-    "She'll be coming round the mountain when she comes",
-    "The itsy bitsy spider went up the water spout. Down came the rain and washed the spider out",
-    "Last Christmas, I gave you my heart. But the very next day, you gave it away",
-    "Country roads, take me home to the place I belong"
+    "Amazing grace how sweet the sound || Amazing Grace — Traditional",
+    "Twinkle twinkle little star how I wonder what you are || Traditional",
+    "When the saints go marching in I want to be in that number || Traditional",
+    "Home home on the range where the deer and the antelope play || Traditional",
+    "She'll be coming round the mountain when she comes || Traditional",
+    "Shenandoah I long to see you away you rolling river || Traditional"
   ];
 
   function tokenize(line){
@@ -171,13 +171,11 @@
   }
 
   function chooseBlanks(words, difficulty){
-    // difficulty → how many blanks based on length
     const len = words.length;
     let min=1, max=2;
     if (difficulty==="medium"){ min=2; max=3; }
     if (difficulty==="hard"){ min=3; max=5; }
     const count = Math.min(len>4 ? Math.floor(Math.random()*(max-min+1))+min : 1, Math.max(1, Math.floor(len/3)));
-    // avoid blanking the very first and very last consistently; spread picks
     const idxPool = Array.from(words.keys()).filter(i => words[i].clean.length>0);
     const picks = new Set();
     let guard = 0;
@@ -185,7 +183,6 @@
       guard++;
       const i = idxPool[Math.floor(Math.random()*idxPool.length)];
       if (i===0 || i===len-1) continue;
-      // avoid clustering: skip neighbors if already picked
       if (picks.has(i-1) || picks.has(i+1)) continue;
       picks.add(i);
     }
@@ -194,11 +191,10 @@
   }
 
   function maskToHTML(words, blanks){
-    const html = words.map((w, i) => blanks.includes(i)
+    return words.map((w, i) => blanks.includes(i)
       ? `<span data-i="${i}" class="blank" style="display:inline-block; min-width:56px; border-bottom:2px solid var(--accent); text-align:center">&nbsp;</span>`
       : `<span>${w.raw}</span>`
     ).join(" ");
-    return html;
   }
 
   function createInputs(words, blanks){
@@ -230,7 +226,7 @@
   let timerId = null;
   let memTimerId = null;
 
-  let current = null; // { words, meta, blanks, answers:[], startTs }
+  let current = null; // { words, meta, blanks }
   let accepting = false;
   let usedLetterHints = 0, usedWordHints = 0;
 
@@ -262,7 +258,6 @@
   const $next = document.getElementById("next");
 
   // ---------- Init ----------
-  // Load saved custom lines if any
   (function init(){
     const saved = localStorage.getItem("lm_lines");
     if (saved) $lyricsBox.value = saved;
@@ -305,7 +300,6 @@
 
   function preparePool(){
     ALL_LINES = parseLyricsBox();
-    // Shuffle
     for (let i=ALL_LINES.length-1;i>0;i--){
       const j = Math.floor(Math.random()*(i+1));
       [ALL_LINES[i], ALL_LINES[j]] = [ALL_LINES[j], ALL_LINES[i]];
@@ -330,7 +324,6 @@
   }
 
   function startGame(){
-    // Read controls
     mode = $mode.value;
     difficulty = $difficulty.value;
     memorizeSec = Math.max(2, Math.min(10, parseInt($memorize.value||5,10)));
@@ -339,7 +332,7 @@
     resetAll();
     preparePool();
 
-    if (mode==="speed"){ timeLeft = 30; } // 30s global
+    if (mode==="speed"){ timeLeft = 30; }
     updateHUD();
     nextRound();
     if (mode==="speed"){
@@ -371,7 +364,6 @@
       return endGame("Out of lives. Final score: " + score + " | Best streak: " + streak);
     }
 
-    // pick next line
     if (ALL_LINES.length===0) preparePool();
     const line = ALL_LINES.pop();
     const tok = tokenize(line);
@@ -393,16 +385,13 @@
     setMeta(tok.meta ? tok.meta : "Memorize…");
 
     let sec = memorizeSec;
-    let countdown = setInterval(()=>{
+    const countdown = setInterval(()=>{
       setMeta((tok.meta ? tok.meta + " — " : "") + "Memorize: " + sec + "s");
       sec--;
-      if (sec<0){
-        clearInterval(countdown);
-      }
+      if (sec < 0) clearInterval(countdown);
     }, 1000);
 
     memTimerId = setTimeout(()=>{
-      // Turn into blanks + show inputs
       $lyric.innerHTML = maskToHTML(tok.words, current.blanks);
       $lyric.classList.remove("lm-ghost");
       $inputs.hidden = false;
@@ -420,19 +409,18 @@
     const inputs = [...$inputs.querySelectorAll("input")];
     const expected = current.blanks.map(i=>current.words[i].clean);
     const given = inputs.map(inp=>normalize(inp.value));
-    // scoring
+
     let correct = 0;
     expected.forEach((w, idx)=>{ if (w===given[idx]) correct++; });
 
     if (correct === expected.length){
       const base = 100;
       const hintPenalty = usedLetterHints*15 + usedWordHints*30;
-      const bonus = Math.min(40, (expected.join("").length)); // small len-based bonus
+      const bonus = Math.min(40, (expected.join("").length));
       const s = Math.max(10, base + (streak*10) + bonus - hintPenalty);
       score += s;
       streak++;
       setMessage("Correct! +" + s + " points", "lm-good");
-      // fill blanks visually
       inputs.forEach((inp, j)=>{
         const i = current.blanks[j];
         const span = $lyric.querySelector(`.blank[data-i="${i}"]`);
@@ -441,7 +429,6 @@
     } else {
       lives--;
       streak = 0;
-      // show correction
       inputs.forEach((inp, j)=>{
         const i = current.blanks[j];
         const want = current.words[i].raw;
@@ -484,7 +471,6 @@
   function hintRevealOne(){
     if (!accepting || !current) return;
     const inputs = [...$inputs.querySelectorAll("input")];
-    // find the first empty
     const idx = inputs.findIndex(i => !i.value);
     if (idx === -1) return;
     usedWordHints++;
@@ -497,36 +483,37 @@
   }
 
   // ---------- Events ----------
-  $start.addEventListener("click", startGame);
-  $reset.addEventListener("click", resetAll);
-  $saveLyrics.addEventListener("click", ()=>{
-    const val = $lyricsBox.value.trim();
+  document.getElementById("start").addEventListener("click", startGame);
+  document.getElementById("reset").addEventListener("click", resetAll);
+  document.getElementById("saveLyrics").addEventListener("click", ()=>{
+    const val = document.getElementById("lyricsBox").value.trim();
     localStorage.setItem("lm_lines", val);
     setMessage("Saved your lyric list locally. Press Start to use them.", "");
   });
-  $loadDefault.addEventListener("click", ()=>{
-    $lyricsBox.value = sampleLines.join("\n");
+  document.getElementById("loadDefault").addEventListener("click", ()=>{
+    document.getElementById("lyricsBox").value = sampleLines.join("\n");
   });
-  $submit.addEventListener("click", evaluate);
-  $next.addEventListener("click", nextRound);
-  $hintLetter.addEventListener("click", hintFirstLetter);
-  $hintWord.addEventListener("click", hintRevealOne);
+  document.getElementById("submit").addEventListener("click", evaluate);
+  document.getElementById("next").addEventListener("click", nextRound);
+  document.getElementById("hintLetter").addEventListener("click", hintFirstLetter);
+  document.getElementById("hintWord").addEventListener("click", hintRevealOne);
 
-  // keyboard shortcuts
   document.addEventListener("keydown", (e)=>{
     if (e.key === "Enter"){
-      if (accepting) evaluate(); else if (!$next.disabled) nextRound();
+      if (accepting) evaluate(); else if (!document.getElementById("next").disabled) nextRound();
     }
-    if (e.key === " " && !accepting && !$next.disabled){
+    if (e.key === " " && !accepting && !document.getElementById("next").disabled){
       e.preventDefault(); nextRound();
     }
     if (e.altKey && e.key.toLowerCase()==="l"){ e.preventDefault(); hintFirstLetter(); }
     if (e.altKey && e.key.toLowerCase()==="w"){ e.preventDefault(); hintRevealOne(); }
   });
 
-  // reflect control changes live (not strictly needed)
-  $mode.addEventListener("change", ()=>{ if ($mode.value==="endless") $rounds.disabled=true; else $rounds.disabled=false; });
-
+  // Reflect control changes live (disable rounds for Endless)
+  document.getElementById("mode").addEventListener("change", ()=>{
+    const rounds = document.getElementById("rounds");
+    rounds.disabled = (document.getElementById("mode").value === "endless");
+  });
   </script>
 </body>
 </html>
