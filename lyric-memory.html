@@ -6,7 +6,6 @@
   <title>Lyric Memory — Nick Isteepho</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* Page-scoped tweaks (kept tiny; main styles in style.css) */
     .lm-wrap{ max-width:1000px; margin:90px auto 40px; padding:0 20px; }
     .lm-grid{ display:grid; grid-template-columns: 320px 1fr; gap:16px; }
     @media (max-width: 980px){ .lm-grid{ grid-template-columns: 1fr; } }
@@ -39,8 +38,6 @@
     }
     body:not(.dark) .lm-edit textarea{ border-color:#e2e6ef; color:#111; }
     .lm-mini{ font-size:12px; color:var(--muted); }
-
-    /* tiny hover polish for the home icon (uses your existing .home-icon) */
     .home-icon:hover{ background: rgba(255,255,255,0.08); border-radius:50%; }
   </style>
 </head>
@@ -69,9 +66,9 @@
         <div class="row">
           <label>Difficulty</label>
           <select id="difficulty">
-            <option value="easy">Easy: 1-2 blanks</option>
-            <option value="medium" selected>Medium: 2-3 blanks</option>
-            <option value="hard">Hard: 3-5 blanks</option>
+            <option value="easy">Easy — 1–2 blanks</option>
+            <option value="medium" selected>Medium — 2–3 blanks</option>
+            <option value="hard">Hard — 3–5 blanks</option>
           </select>
         </div>
         <div class="row">
@@ -91,13 +88,12 @@
         <hr style="opacity:.2; border:none; border-top:1px solid rgba(255,255,255,.12); margin:14px 0">
 
         <h3>Lyric List</h3>
-        <p class="lm-mini">Use these lyrics or your own lyrics. 
-          One line per row, optional <code>|| Title </code>.</p>
+        <p class="lm-mini">Use public-domain or your own lyrics. One line per row, optional <code>|| Title — Artist</code>.</p>
         <div class="lm-edit">
           <textarea id="lyricsBox"></textarea>
         </div>
         <div class="row" style="margin-top:8px">
-          <button id="loadDefault" class="lm-btn">Load Sample</button>
+          <button id="loadDefault" class="lm-btn">Load Sample (public domain)</button>
           <button id="saveLyrics" class="lm-btn">Use These Lines</button>
         </div>
         <p class="lm-mini">Paste your own lines to play with different song lyrics.</p>
@@ -122,6 +118,7 @@
 
         <div class="lm-hints">
           <button id="hintLetter" class="lm-btn" disabled>Hint: First Letter</button>
+          <button id="hintWord" class="lm-btn" disabled>Hint: Reveal Word</button>
           <button id="submit" class="lm-btn primary" disabled>Submit</button>
           <button id="next" class="lm-btn" disabled>Next ▷</button>
         </div>
@@ -143,24 +140,22 @@
 
   <script>
   // ---------- Data & Helpers ----------
-  // Use clean, public-domain lines to avoid copyright + escaping issues.
   const sampleLines = [
-    "Amazing grace how sweet the sound || Amazing Grace — Traditional",
-    "Twinkle twinkle little star how I wonder what you are || Traditional",
-    "When the saints go marching in I want to be in that number || Traditional",
-    "Home home on the range where the deer and the antelope play || Traditional",
-    "She'll be coming round the mountain when she comes || Traditional",
-    "Shenandoah I long to see you away you rolling river || Traditional"
+    `Amazing grace how sweet the sound || Amazing Grace - Traditional`,
+    `Twinkle twinkle little star how I wonder what you are || Traditional`,
+    `When the saints go marching in I want to be in that number || Traditional`,
+    `Home home on the range where the deer and the antelope play || Traditional`,
+    `She'll be coming round the mountain when she comes || Traditional`,
+    `Shenandoah I long to see you away you rolling river || Traditional`
   ];
 
   function tokenize(line){
-    // returns { words: [ {raw, clean} ], meta }
     let meta = "";
     let main = line;
     if (line.includes("||")){
-      const [l, m] = line.split("||");
-      main = l.trim();
-      meta = m.trim();
+      const parts = line.split("||");
+      main = parts[0].trim();
+      meta = parts.slice(1).join("||").trim(); // robust if "||" appears again
     }
     const rawWords = main.split(/\s+/).filter(Boolean);
     const words = rawWords.map(w => {
@@ -259,8 +254,13 @@
 
   // ---------- Init ----------
   (function init(){
+    // Always have something to play: load saved, else samples.
     const saved = localStorage.getItem("lm_lines");
-    if (saved) $lyricsBox.value = saved;
+    if (saved && saved.trim()) {
+      $lyricsBox.value = saved;
+    } else {
+      $lyricsBox.value = sampleLines.join("\n");
+    }
     updateHUD();
   })();
 
@@ -288,7 +288,9 @@
   function setMeta(text){ $meta.textContent = text; }
 
   function setProgress(pct){
-    $progress.style.width = Math.max(0, Math.min(100, pct)) + "%";
+    const n = typeof pct === "number" ? pct : parseFloat(String(pct).replace('%',''));
+    const clamped = isFinite(n) ? Math.max(0, Math.min(100, n)) : 0;
+    $progress.style.width = clamped + "%";
   }
 
   function parseLyricsBox(){
@@ -299,7 +301,7 @@
   }
 
   function preparePool(){
-    ALL_LINES = parseLyricsBox();
+    ALL_LINES = parseLyricsBox().slice();
     for (let i=ALL_LINES.length-1;i>0;i--){
       const j = Math.floor(Math.random()*(i+1));
       [ALL_LINES[i], ALL_LINES[j]] = [ALL_LINES[j], ALL_LINES[i]];
@@ -332,9 +334,10 @@
     resetAll();
     preparePool();
 
-    if (mode==="speed"){ timeLeft = 30; }
+    if (mode==="speed"){ timeLeft = 30; setProgress(0); }
     updateHUD();
     nextRound();
+
     if (mode==="speed"){
       timerId = setInterval(()=>{
         timeLeft--; updateHUD();
@@ -400,7 +403,10 @@
       accepting = true;
       setButtons("answer");
       setMeta(tok.meta ? tok.meta : "Fill in the blanks");
-      setProgress(mode==="speed" ? $progress.style.width : ((round-1)/(totalRounds||1))*100);
+
+      if (mode!=="speed"){
+        setProgress(((round-1)/(totalRounds||1))*100);
+      }
     }, memorizeSec * 1000);
   }
 
@@ -483,36 +489,36 @@
   }
 
   // ---------- Events ----------
-  document.getElementById("start").addEventListener("click", startGame);
-  document.getElementById("reset").addEventListener("click", resetAll);
-  document.getElementById("saveLyrics").addEventListener("click", ()=>{
-    const val = document.getElementById("lyricsBox").value.trim();
+  $start.addEventListener("click", startGame);
+  $reset.addEventListener("click", resetAll);
+  $saveLyrics.addEventListener("click", ()=>{
+    const val = $lyricsBox.value.trim();
     localStorage.setItem("lm_lines", val);
     setMessage("Saved your lyric list locally. Press Start to use them.", "");
   });
-  document.getElementById("loadDefault").addEventListener("click", ()=>{
-    document.getElementById("lyricsBox").value = sampleLines.join("\n");
+  $loadDefault.addEventListener("click", ()=>{
+    $lyricsBox.value = sampleLines.join("\n");
+    setMessage("Loaded sample lines. Press Start.", "");
   });
-  document.getElementById("submit").addEventListener("click", evaluate);
-  document.getElementById("next").addEventListener("click", nextRound);
-  document.getElementById("hintLetter").addEventListener("click", hintFirstLetter);
-  document.getElementById("hintWord").addEventListener("click", hintRevealOne);
+  $submit.addEventListener("click", evaluate);
+  $next.addEventListener("click", nextRound);
+  $hintLetter.addEventListener("click", hintFirstLetter);
+  $hintWord.addEventListener("click", hintRevealOne);
 
   document.addEventListener("keydown", (e)=>{
     if (e.key === "Enter"){
-      if (accepting) evaluate(); else if (!document.getElementById("next").disabled) nextRound();
+      if (accepting) evaluate(); else if (!$next.disabled) nextRound();
     }
-    if (e.key === " " && !accepting && !document.getElementById("next").disabled){
+    if (e.key === " " && !accepting && !$next.disabled){
       e.preventDefault(); nextRound();
     }
     if (e.altKey && e.key.toLowerCase()==="l"){ e.preventDefault(); hintFirstLetter(); }
     if (e.altKey && e.key.toLowerCase()==="w"){ e.preventDefault(); hintRevealOne(); }
   });
 
-  // Reflect control changes live (disable rounds for Endless)
-  document.getElementById("mode").addEventListener("change", ()=>{
-    const rounds = document.getElementById("rounds");
-    rounds.disabled = (document.getElementById("mode").value === "endless");
+  // Disable rounds input in Endless mode
+  $mode.addEventListener("change", ()=>{
+    $rounds.disabled = ($mode.value === "endless");
   });
   </script>
 </body>
