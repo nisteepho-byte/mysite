@@ -27,49 +27,48 @@
 
 <main class="wrap">
   <h1 id="title">Ratios</h1>
-  <div class="grid" id="cards"></div>
+  <div class="grid" id="cards">Loading…</div>
 </main>
 
+<script src="./api.js"></script>
 <script>
-const DB = {
-  AAPL:{ name:"Apple Inc.", years:["2024","2023","2022","2021"],
-    revenue:[383.3,383.3,394.3,365.8], opIncome:[114.3,114.3,119.4,108.9], netIncome:[97.0,97.0,99.8,94.7],
-    assets:[352.5,352.8,352.8,351.0], equity:[74.1,62.2,50.7,63.1], cfo:[110.5,110.5,122.2,104.0], capex:[-10.5,-10.5,-12.1,-11.1]
-  },
-  MSFT:{ name:"Microsoft Corp.", years:["2024","2023","2022","2021"],
-    revenue:[245.0,211.9,198.3,168.1], opIncome:[107.0,88.5,83.4,69.9], netIncome:[86.2,72.4,72.7,61.3],
-    assets:[512.8,411.9,364.8,333.8], equity:[244.0,206.2,166.5,176.2], cfo:[121.0,87.6,89.0,76.7], capex:[-22.0,-24.8,-23.9,-22.7]
+const tk = (new URLSearchParams(location.search).get('t')||'AAPL').toUpperCase();
+document.getElementById('title').textContent = `${tk} — Ratios`;
+
+function tone(v, goodHigh=true){ if (v==null) return ''; if (goodHigh) return v>0.25?'ok':v>0.15?'warn':'bad'; else return v<2.0?'ok':v<3.0?'warn':'bad'; }
+
+async function load() {
+  try {
+    const [is, bs, cf, metrics] = await Promise.all([
+      __FMP.income(tk,2), __FMP.balance(tk,2), __FMP.cashflow(tk,2), __FMP.keyMetrics(tk,2)
+    ]);
+    const i0=is?.[0], b0=bs?.[0], c0=cf?.[0], i1=is?.[1], b1=bs?.[1];
+    const rev=i0?.revenue, op=i0?.operatingIncome, net=i0?.netIncome;
+    const assets0=b0?.totalAssets, assets1=b1?.totalAssets;
+    const equity0=b0?.totalStockholdersEquity, equity1=b1?.totalStockholdersEquity;
+    const cfo=c0?.netCashProvidedByOperatingActivities, capex=c0?.capitalExpenditure;
+    const at = rev && assets0 && assets1 ? rev/((assets0+assets1)/2) : null;
+    const roe = net && equity0 && equity1 ? net/((equity0+equity1)/2) : null;
+    const lev = assets0 && equity0 ? assets0/Math.max(equity0,0.0001) : null;
+    const cards = [
+      {t:"Operating Margin", v: rev? (op/rev):null, fmt:__FMP.pct, cls:v=>tone(v)},
+      {t:"Net Margin", v: rev? (net/rev):null, fmt:__FMP.pct, cls:v=>tone(v)},
+      {t:"FCF Margin", v: rev? ((c0?.netCashProvidedByOperatingActivities+(capex||0))/rev):null, fmt:__FMP.pct, cls:v=>tone(v)},
+      {t:"Asset Turnover", v: at, fmt:v=>v?.toFixed(2)+'×', cls:v=>tone(v)},
+      {t:"ROE", v: roe, fmt:__FMP.pct, cls:v=>tone(v)},
+      {t:"Leverage (A/E)", v: lev, fmt:v=>v?.toFixed(2)+'×', cls:v=>tone(v,false)}
+    ];
+    document.getElementById('cards').innerHTML = cards.map(c=>`
+      <div class="card">
+        <p class="muted">${c.t}</p>
+        <div class="big ${c.cls(c.v)}">${c.v==null?'—':c.fmt(c.v)}</div>
+        <p class="muted">FY ${__FMP.ylab(i0?.date)}</p>
+      </div>`).join('');
+  } catch(e){
+    document.getElementById('cards').innerHTML = `<p class="muted">Could not load ${tk}. Check API key/ticker.</p>`;
   }
-};
-const tk=(new URLSearchParams(location.search).get('t')||'AAPL').toUpperCase();
-const d = DB[tk]||DB.AAPL;
-document.getElementById('title').textContent = `${tk} — ${d.name}`;
-
-function pct(x){return (x*100).toFixed(1)+'%'}
-function tone(v, goodHigh=true){ if (goodHigh) return v>0.25?'ok':v>0.15?'warn':'bad'; else return v<1.8?'ok':v<2.5?'warn':'bad'; }
-
-const i=0;
-const opm = d.opIncome[i]/d.revenue[i];
-const nm  = d.netIncome[i]/d.revenue[i];
-const fcf = (d.cfo[i]+d.capex[i])/d.revenue[i];
-const at  = d.revenue[i]/((d.assets[0]+d.assets[1])/2 || d.assets[0]);
-const roe = d.netIncome[i]/((d.equity[0]+d.equity[1])/2 || d.equity[0]);
-const lev = d.assets[i]/(d.equity[i]||0.1);
-
-const cards = [
-  {t:"Operating Margin", v:pct(opm), cls:tone(opm)},
-  {t:"Net Margin", v:pct(nm), cls:tone(nm)},
-  {t:"FCF Margin", v:pct(fcf), cls:tone(fcf)},
-  {t:"Asset Turnover", v:(at).toFixed(2)+'×', cls:tone(at)},
-  {t:"ROE", v:pct(roe), cls:tone(roe)},
-  {t:"Leverage (A/E)", v:(lev).toFixed(2)+'×', cls:tone(lev,false)}
-];
-document.getElementById('cards').innerHTML = cards.map(c=>`
-  <div class="card">
-    <p class="muted">${c.t}</p>
-    <div class="big ${c.cls}">${c.v}</div>
-    <p class="muted">FY ${d.years[0]}</p>
-  </div>`).join('');
+}
+load();
 </script>
 </body>
 </html>
