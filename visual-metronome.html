@@ -6,43 +6,28 @@
   <title>Visual Metronome — Nick Isteepho</title>
   <link rel="stylesheet" href="style.css"/>
   <style>
-    /* Page scope (keeps most styling in your style.css) */
-    .vm-wrap{max-width:1100px;margin:90px auto 48px;padding:0 20px}
-    .grid{display:grid;grid-template-columns:360px 1fr;gap:16px}
-    @media (max-width:1000px){.grid{grid-template-columns:1fr}}
-    .card{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px}
-
+    /* Page-scoped styles (uses your theme vars) */
+    .vm-wrap{max-width:800px;margin:90px auto 48px;padding:0 20px}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .col{display:flex;flex-direction:column;gap:6px}
-    .input,.select{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:transparent;color:var(--fg)}
-    body:not(.dark) .input, body:not(.dark) .select{border-color:#e6e7ef;color:#111}
-    .btn{padding:10px 14px;border-radius:10px;border:1px solid var(--accent);background:transparent;color:var(--fg);cursor:pointer}
-    .btn.primary{background:var(--accent);color:white;border-color:var(--accent)}
-    .mini{font-size:12px;color:var(--muted)}
     .label{font-size:12px;color:var(--muted)}
-    .num{width:92px}
+    .input{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:transparent;color:var(--fg);width:90px}
+    body:not(.dark) .input{border-color:#e6e7ef;color:#111}
+    .btn{padding:10px 14px;border-radius:10px;border:1px solid var(--accent);background:transparent;color:var(--fg);cursor:pointer}
+    .btn.primary{background:var(--accent);color:#fff}
+    .mini{font-size:12px;color:var(--muted)}
 
     /* Visual stage */
-    .stage{display:grid;grid-template-columns:1fr;place-items:center;padding:12px}
-    .canvas-wrap{position:relative;width:360px;max-width:100%;aspect-ratio:1;display:grid;place-items:center}
-    .ring{position:absolute;inset:0;border-radius:50%;border:10px solid rgba(255,255,255,.08)}
-    .pulse{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 0 rgba(122,162,255,.0);transition:box-shadow .08s ease}
-    .needle{position:absolute;width:4px;height:45%;background:var(--accent);top:5%;left:calc(50% - 2px);transform-origin:50% 90%;border-radius:2px}
-    .bar{position:absolute;bottom:18px;left:10%;right:10%;height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
-    .bar > span{display:block;height:100%;width:0%;background:var(--accent);transition:width .06s linear}
-
-    /* Beat lights (outer dots) */
-    .lights{position:absolute;inset:0}
-    .light{position:absolute;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.18);box-shadow:0 0 0 1px rgba(255,255,255,.1)}
-    .light.on{background:var(--accent)}
-    .light.accent{box-shadow:0 0 0 2px var(--accent)}
-
-    /* Beat grid below */
-    .beats{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(34px,1fr);gap:6px;margin-top:10px}
-    .beat-pill{padding:8px 0;border-radius:10px;text-align:center;border:1px solid rgba(255,255,255,.16);color:var(--muted)}
-    .beat-pill.active{background:var(--accent);color:white;border-color:var(--accent)}
-    .beat-pill.accent{border-color:var(--accent)}
-
+    .stage{display:grid;place-items:center;gap:12px;padding:16px}
+    .circle{width:260px;max-width:100%;aspect-ratio:1;border-radius:50%;
+      border:10px solid rgba(255,255,255,.08);display:grid;place-items:center;position:relative}
+    .pulse{width:70%;height:70%;border-radius:50%;background:var(--accent);
+      opacity:.12;transform:scale(.9);transition:transform .06s ease, opacity .06s ease}
+    .bar{width:100%;height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+    .bar>span{display:block;height:100%;width:0%;background:var(--accent);transition:width .06s linear}
+    .beats{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;width:100%}
+    .pill{padding:8px 0;border-radius:10px;text-align:center;border:1px solid rgba(255,255,255,.16);color:var(--muted)}
+    .pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
     .home-icon:hover{background:rgba(255,255,255,.08);border-radius:50%}
   </style>
 </head>
@@ -51,393 +36,167 @@
     <a href="index.html" class="home-icon" title="Back to Home">⌂</a>
     <div class="header-text">
       <h1>Visual Metronome</h1>
-      <p class="sub">Tap tempo, time signatures, subdivisions, swing, humanize, polyrhythm overlay, presets, and a clean visual pulse.</p>
+      <p class="sub">Simple and clean: Start/Stop, BPM, Tap Tempo, visual pulse, and click.</p>
     </div>
   </header>
 
   <main class="vm-wrap">
-    <div class="grid">
-      <!-- LEFT: Controls -->
-      <aside class="card">
-        <div class="row">
-          <div class="col">
-            <span class="label">Tempo (BPM)</span>
-            <input id="bpm" type="number" class="input num" min="20" max="300" value="100"/>
-          </div>
-          <div class="col">
-            <span class="label">Time Sig</span>
-            <div class="row">
-              <input id="beats" type="number" class="input num" min="2" max="12" value="4"/>
-              <span class="label">/</span>
-              <select id="note" class="select">
-                <option value="4" selected>4</option>
-                <option value="8">8</option>
-                <option value="2">2</option>
-              </select>
-            </div>
-          </div>
-          <div class="col">
-            <span class="label">Subdivision</span>
-            <select id="subdiv" class="select">
-              <option value="1">Quarter (x1)</option>
-              <option value="2" selected>Eighth (x2)</option>
-              <option value="3">Triplet (x3)</option>
-              <option value="4">Sixteenth (x4)</option>
-              <option value="5">Quintuplet (x5)</option>
-              <option value="6">Sextuplet (x6)</option>
-            </select>
-          </div>
+    <section class="card">
+      <div class="row">
+        <div>
+          <div class="label">Tempo (BPM)</div>
+          <input id="bpm" class="input" type="number" min="20" max="300" value="100"/>
         </div>
+        <button id="start" class="btn primary">Start</button>
+        <button id="stop" class="btn">Stop</button>
+        <button id="tap" class="btn">Tap</button>
+        <label class="row" style="gap:8px;margin-left:auto">
+          <input id="mute" type="checkbox"/> <span class="label">Mute</span>
+        </label>
+      </div>
+      <p class="mini">Shortcuts: Space = Start/Stop · T = Tap · ↑/↓ = BPM ±1 · Shift+↑/↓ = BPM ±5</p>
+    </section>
 
-        <div class="row" style="margin-top:6px">
-          <div class="col">
-            <span class="label">Swing %</span>
-            <input id="swing" type="range" min="0" max="65" value="0"/>
-          </div>
-          <div class="col">
-            <span class="label">Humanize (ms)</span>
-            <input id="human" type="range" min="0" max="25" value="0"/>
-          </div>
-          <div class="col">
-            <span class="label">Count-in</span>
-            <select id="countin" class="select">
-              <option value="0">Off</option>
-              <option value="1">1 bar</option>
-              <option value="2">2 bars</option>
-            </select>
-          </div>
-        </div>
-
-        <hr style="opacity:.2;border:none;border-top:1px solid rgba(255,255,255,.12);margin:12px 0"/>
-
-        <div class="row">
-          <div class="col">
-            <span class="label">Polyrhythm Overlay</span>
-            <div class="row">
-              <select id="polyA" class="select">
-                <option value="0" selected>Off</option>
-                <option>2</option><option>3</option><option>4</option><option>5</option><option>7</option>
-              </select>
-              <span class="label">over</span>
-              <select id="polyB" class="select">
-                <option value="0" selected>—</option>
-                <option>2</option><option>3</option><option>4</option><option>5</option><option>7</option>
-              </select>
-            </div>
-            <span class="mini">Example: 3 over 2 will flash a faint second pattern.</span>
-          </div>
-        </div>
-
-        <hr style="opacity:.2;border:none;border-top:1px solid rgba(255,255,255,.12);margin:12px 0"/>
-
-        <div class="row">
-          <button id="start" class="btn primary">Start</button>
-          <button id="stop" class="btn">Stop</button>
-          <button id="tap" class="btn">Tap</button>
-          <label class="row" style="gap:8px">
-            <input id="flash" type="checkbox" checked/> <span class="label">Flash</span>
-          </label>
-          <label class="row" style="gap:8px">
-            <input id="mute" type="checkbox"/> <span class="label">Mute</span>
-          </label>
-        </div>
-
-        <hr style="opacity:.2;border:none;border-top:1px solid rgba(255,255,255,.12);margin:12px 0"/>
-
-        <div class="row">
-          <div class="col">
-            <span class="label">Presets</span>
-            <div class="row">
-              <select id="preset" class="select" style="min-width:200px"></select>
-              <button id="save" class="btn">Save</button>
-              <button id="del" class="btn">Delete</button>
-            </div>
-          </div>
-        </div>
-
-        <p class="mini" style="margin-top:8px">
-          Shortcuts: <b>Space</b> Start/Stop · <b>T</b> Tap · <b>↑/↓</b> BPM ±1 · <b>Shift+↑/↓</b> BPM ±5
-        </p>
-      </aside>
-
-      <!-- RIGHT: Visual -->
-      <section class="card stage">
-        <div class="canvas-wrap">
-          <div class="ring"></div>
-          <div id="pulse" class="pulse"></div>
-          <div id="needle" class="needle"></div>
-          <div class="lights" id="lights"></div>
-          <div class="bar"><span id="barprog"></span></div>
-        </div>
-        <div id="beatGrid" class="beats"></div>
-        <div class="mini" id="readout">—</div>
-      </section>
-    </div>
+    <section class="card stage">
+      <div class="circle">
+        <div id="pulse" class="pulse"></div>
+      </div>
+      <div class="bar"><span id="prog"></span></div>
+      <div id="beats" class="beats"></div>
+      <div class="mini" id="readout">—</div>
+    </section>
   </main>
 
   <script>
-  // ---------- Utilities ----------
-  const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
-  const $ = sel => document.querySelector(sel);
-  const $$ = sel => Array.from(document.querySelectorAll(sel));
-
   // Elements
+  const $ = s => document.querySelector(s);
   const el = {
-    bpm: $('#bpm'), beats: $('#beats'), note: $('#note'), subdiv: $('#subdiv'),
-    swing: $('#swing'), human: $('#human'), countin: $('#countin'),
-    polyA: $('#polyA'), polyB: $('#polyB'),
-    start: $('#start'), stop: $('#stop'), tap: $('#tap'),
-    flash: $('#flash'), mute: $('#mute'),
-    preset: $('#preset'), save: $('#save'), del: $('#del'),
-    needle: $('#needle'), pulse: $('#pulse'), bar: $('#barprog'),
-    lights: $('#lights'), grid: $('#beatGrid'), readout: $('#readout')
+    bpm: $('#bpm'), start: $('#start'), stop: $('#stop'), tap: $('#tap'), mute: $('#mute'),
+    pulse: $('#pulse'), prog: $('#prog'), beats: $('#beats'), readout: $('#readout')
   };
 
-  // ---------- Visual Layout (beat dots around circle) ----------
-  function layoutLights(beats){
-    el.lights.innerHTML = '';
-    const r = el.lights.getBoundingClientRect();
-    const cx = r.width/2, cy = r.height/2, rad = Math.min(cx,cy) - 18;
-    for(let i=0;i<beats;i++){
-      const a = (i/beats)*Math.PI*2 - Math.PI/2;
-      const x = cx + rad*Math.cos(a) - 7;
-      const y = cy + rad*Math.sin(a) - 7;
+  // Build simple 4/4 pills
+  let beatsPerBar = 4;
+  function renderBeats(){
+    el.beats.innerHTML = '';
+    for(let i=0;i<beatsPerBar;i++){
       const d = document.createElement('div');
-      d.className = 'light';
-      d.style.transform = `translate(${x}px,${y}px)`;
-      if (i===0) d.classList.add('accent');
-      el.lights.appendChild(d);
-    }
-    // grid pills
-    el.grid.innerHTML = '';
-    for(let i=0;i<beats;i++){
-      const b = document.createElement('div');
-      b.className = 'beat-pill' + (i===0?' accent':'');
-      b.textContent = (i+1);
-      el.grid.appendChild(b);
+      d.className = 'pill';
+      d.textContent = i+1;
+      el.beats.appendChild(d);
     }
   }
+  renderBeats();
 
-  // ---------- WebAudio scheduler ----------
-  let ctx, masterGain;
-  let nextNoteTime = 0;     // seconds
-  let currentIndex = 0;     // subdivision index within bar
-  let rafId = 0;
-  let running = false;
-  let countInLeft = 0;
-  let tapTimes = [];
-
+  // Audio
+  let ctx, gain;
   function ensureAudio(){
     if (!ctx){
-      ctx = new (window.AudioContext || window.webkitAudioContext)();
-      masterGain = ctx.createGain();
-      masterGain.gain.value = 0.9;
-      masterGain.connect(ctx.destination);
+      ctx = new (window.AudioContext||window.webkitAudioContext)();
+      gain = ctx.createGain(); gain.gain.value = 0.85; gain.connect(ctx.destination);
     }
   }
-
-  function click(frequency, when, dur=0.02, gain=0.6){
+  function click(fHz, t){
     if (el.mute.checked) return;
     const o = ctx.createOscillator();
     const g = ctx.createGain();
-    o.type = 'square';
-    o.frequency.setValueAtTime(frequency, when);
-    g.gain.setValueAtTime(gain, when);
-    g.gain.exponentialRampToValueAtTime(0.001, when + dur);
-    o.connect(g); g.connect(masterGain);
-    o.start(when); o.stop(when + dur + 0.02);
+    o.type = 'square'; o.frequency.setValueAtTime(fHz, t);
+    g.gain.setValueAtTime(0.6, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
+    o.connect(g); g.connect(gain);
+    o.start(t); o.stop(t + 0.04);
   }
 
+  // Scheduler (lightweight)
+  let running = false, nextTime = 0, step = 0, raf = 0;
   function settings(){
-    const bpm = clamp(parseInt(el.bpm.value||100,10),20,300);
-    const beats = clamp(parseInt(el.beats.value||4,10),2,12);
-    const note = parseInt(el.note.value||4,10);
-    const subdivMap = {1:1,2:2,3:3,4:4,5:5,6:6};
-    const subdiv = subdivMap[parseInt(el.subdiv.value,10)] || 2;
-    const swing = parseInt(el.swing.value||0,10)/100;  // 0..0.65
-    const human = parseInt(el.human.value||0,10);      // ms
-    const countinBars = parseInt(el.countin.value||0,10);
-    const polyA = parseInt(el.polyA.value||0,10);
-    const polyB = parseInt(el.polyB.value||0,10);
-
-    // beat duration in seconds: quarter = 60/bpm; adjust for denominator
-    const quarter = 60/bpm;
-    const beatDur = quarter * (4/note);     // e.g., for 6/8, note=8 ⇒ beat=⅛
-    const stepDur = beatDur / subdiv;
-
-    return {bpm, beats, note, subdiv, swing, human, beatDur, stepDur, countinBars, polyA, polyB};
+    const bpm = Math.max(20, Math.min(300, parseInt(el.bpm.value||100,10)));
+    const beatDur = 60/bpm;       // quarter note
+    return { bpm, beatDur };
   }
 
-  function scheduleAhead(){
-    const s = settings();
-    const scheduleHorizon = 0.15; // seconds
-    while (nextNoteTime < ctx.currentTime + scheduleHorizon){
-      // determine which beat/subdiv we are on
-      const stepsPerBar = s.beats * s.subdiv;
-      const stepInBar = currentIndex % stepsPerBar;
-      const beatInBar = Math.floor(stepInBar / s.subdiv);
-      const isDown = (beatInBar === 0) && (stepInBar % s.subdiv === 0);
-      const isBeat = (stepInBar % s.subdiv === 0);
-      const isSub = !isBeat;
+  function schedule(){
+    const { beatDur, bpm } = settings();
+    const lookahead = 0.12;
+    const stepsPerBar = beatsPerBar; // quarter notes
+    while (nextTime < ctx.currentTime + lookahead){
+      const beatIndex = step % stepsPerBar;
+      // sound
+      click( beatIndex===0 ? 1600 : 1100, nextTime );
+      // visuals at play time
+      const dt = Math.max(0, nextTime - ctx.currentTime);
+      setTimeout(()=>{
+        // pulse
+        el.pulse.style.opacity = beatIndex===0 ? .45 : .25;
+        el.pulse.style.transform = 'scale(1.0)';
+        setTimeout(()=>{ el.pulse.style.opacity=.12; el.pulse.style.transform='scale(.9)'; }, 70);
 
-      // swing: delay the "off" subdiv (odd index within pair) by swing * stepDur
-      let playTime = nextNoteTime;
-      if (s.subdiv === 2 && (stepInBar % 2 === 1)) {
-        playTime += s.stepDur * s.swing;
-      }
-      // humanize: small random jitter (ms -> s)
-      if (s.human > 0) {
-        playTime += ( (Math.random()*2 - 1) * s.human ) / 1000;
-      }
+        // pills
+        [...el.beats.children].forEach((p,i)=>p.classList.toggle('active', i===beatIndex));
 
-      // Count-in handling: clicks are low blips, no visuals except bar
-      if (countInLeft > 0){
-        const ciBeat = (stepInBar % s.subdiv === 0);
-        if (ciBeat) {
-          click(650, playTime, 0.015, 0.45);
-        }
-      } else {
-        // sound
-        if (!el.mute.checked){
-          if (isDown && isBeat) click(1700, playTime, 0.02, 0.7);
-          else if (isBeat)      click(1200, playTime, 0.018, 0.55);
-          else if (isSub)       click(900,  playTime, 0.012, 0.35);
-        }
-        // poly overlay (very soft)
-        if (s.polyA && s.polyB){
-          // compute which step triggers: map bar length to LCM slots
-          // simple approach: tick on nearest fraction of bar
-          const fraction = (currentIndex % stepsPerBar) / stepsPerBar;
-          const polySteps = s.polyA; // top number pulses evenly across bar
-          const polyPos = Math.round(fraction * polySteps);
-          // give a soft tick at beginnings
-          if (Math.abs(fraction*polySteps - polyPos) < 1e-6){
-            click(600, playTime, 0.01, 0.25);
-          }
-        }
-        // visuals for scheduled note
-        scheduleVisual(beatInBar, stepInBar, stepsPerBar, playTime, isDown, isBeat, s);
-      }
+        // progress
+        const frac = (beatIndex/stepsPerBar)*100;
+        el.prog.style.width = frac.toFixed(1)+'%';
+
+        // label
+        el.readout.textContent = `Beat ${beatIndex+1}/${stepsPerBar} • ${bpm} BPM`;
+      }, dt*1000);
 
       // advance
-      currentIndex++;
-      // step duration (base)
-      let step = s.stepDur;
-      // swing already applied via scheduling time; base step still the grid.
-      nextNoteTime += step;
-
-      // finished a bar?
-      if ((currentIndex % (s.beats*s.subdiv)) === 0 && countInLeft > 0) {
-        countInLeft--;
-      }
+      step++;
+      nextTime += beatDur;
     }
-  }
-
-  // Visuals scheduled with rAF near their playTime
-  function scheduleVisual(beatInBar, stepInBar, stepsPerBar, when, isDown, isBeat, s){
-    const dt = Math.max(0, when - ctx.currentTime);
-    setTimeout(()=>{
-      // needle rotate 0..360 by fraction of bar
-      const frac = (stepInBar/stepsPerBar);
-      const deg = frac*360;
-      el.needle.style.transform = `translateX(-2px) rotate(${deg}deg)`;
-
-      // progress bar
-      el.bar.style.width = (frac*100).toFixed(1)+'%';
-
-      // pulse flash
-      if (el.flash.checked){
-        const alpha = isDown ? 0.55 : isBeat ? 0.35 : 0.18;
-        el.pulse.style.boxShadow = `0 0 0 18px rgba(122,162,255,${alpha})`;
-        setTimeout(()=>{ el.pulse.style.boxShadow = `0 0 0 0 rgba(122,162,255,0)`; }, 70);
-      }
-
-      // outer lights
-      const dots = Array.from(el.lights.children);
-      dots.forEach((d,i)=> d.classList.toggle('on', i===beatInBar));
-
-      // bottom grid pills
-      const pills = Array.from(el.grid.children);
-      pills.forEach((p,i)=> p.classList.toggle('active', i===beatInBar));
-
-      // readout
-      el.readout.textContent = `Beat ${beatInBar+1}/${s.beats} • Sub ${ (stepInBar % s.subdiv) + 1 }/${s.subdiv} • ${el.bpm.value} BPM`;
-    }, dt*1000);
   }
 
   function tick(){
     if (!running) return;
-    scheduleAhead();
-    rafId = requestAnimationFrame(tick);
+    schedule();
+    raf = requestAnimationFrame(tick);
   }
 
   function start(){
     ensureAudio();
-    const s = settings();
-    layoutLights(s.beats);
-    // initialize
-    currentIndex = 0;
-    nextNoteTime = ctx.currentTime + 0.06; // slight lead-in
-    const bars = parseInt(el.countin.value,10)||0;
-    countInLeft = bars;
+    const { beatDur } = settings();
     running = true;
-    cancelAnimationFrame(rafId);
+    step = 0;
+    nextTime = ctx.currentTime + 0.06;
+    cancelAnimationFrame(raf);
     tick();
   }
-
   function stop(){
     running = false;
-    cancelAnimationFrame(rafId);
-    el.bar.style.width = '0%';
+    cancelAnimationFrame(raf);
+    el.prog.style.width = '0%';
+    [...el.beats.children].forEach(p=>p.classList.remove('active'));
     el.readout.textContent = '—';
-    // turn off visuals
-    $$('.light.on').forEach(d=>d.classList.remove('on'));
-    $$('.beat-pill.active').forEach(p=>p.classList.remove('active'));
   }
 
-  // ---------- Tap Tempo ----------
+  // Tap tempo (average last 5)
+  let taps = [];
   function tap(){
     const now = performance.now();
-    tapTimes.push(now);
-    // keep last 6 taps
-    if (tapTimes.length > 6) tapTimes.shift();
-    if (tapTimes.length >= 2){
-      const diffs = tapTimes.slice(1).map((t,i)=> t - tapTimes[i]);
+    taps.push(now); if (taps.length>6) taps.shift();
+    if (taps.length>=2){
+      const diffs = taps.slice(1).map((t,i)=>t - taps[i]);
       const avg = diffs.reduce((a,b)=>a+b,0)/diffs.length;
-      const bpm = clamp(Math.round(60000/avg), 20, 300);
+      const bpm = Math.max(20, Math.min(300, Math.round(60000/avg)));
       el.bpm.value = bpm;
     }
   }
 
-  // ---------- Presets ----------
-  function loadPresets(){
-    const raw = JSON.parse(localStorage.getItem('vm_presets')||'[]');
-    el.preset.innerHTML = '';
-    raw.forEach((p,i)=>{
-      const opt = document.createElement('option');
-      opt.value = i; opt.textContent = p.name;
-      el.preset.appendChild(opt);
-    });
-    if (!raw.length){
-      // seed a couple
-      const seeds = [
-        {name:'4/4 Rock — 120', bpm:120, beats:4, note:4, subdiv:2, swing:0, human:3, countin:1, polyA:0, polyB:0},
-        {name:'Jazz Ride — 160 Swing 55%', bpm:160, beats:4, note:4, subdiv:2, swing:55, human:5, countin:1, polyA:3, polyB:2},
-        {name:'Waltz — 3/4 Triplets 90', bpm:90, beats:3, note:4, subdiv:3, swing:0, human:0, countin:0, polyA:0, polyB:0},
-      ];
-      localStorage.setItem('vm_presets', JSON.stringify(seeds));
-      loadPresets();
-    }
-  }
+  // Events
+  el.start.addEventListener('click', start);
+  el.stop.addEventListener('click', stop);
+  el.tap.addEventListener('click', tap);
+  el.bpm.addEventListener('change', ()=>{ if (running){ stop(); start(); }});
 
-  function getPresetState(){
-    return {
-      name: `Preset ${new Date().toLocaleTimeString()}`,
-      bpm: parseInt(el.bpm.value,10),
-      beats: parseInt(el.beats.value,10),
-      note: parseInt(el.note.value,10),
-      subdiv: parseInt(el.subdiv.value,10),
-      swing: parseInt(el.swing.value,10),
-      human: parseInt(el.human.value,10),
-      countin: parseInt(el.countin.value,10),
-      polyA: parseI
+  // Keys
+  document.addEventListener('keydown', e=>{
+    if (e.code==='Space'){ e.preventDefault(); running ? stop() : start(); }
+    if (e.key.toLowerCase()==='t'){ tap(); }
+    if (e.key==='ArrowUp'){ el.bpm.value = Math.min(300, parseInt(el.bpm.value,10)+(e.shiftKey?5:1)); if (running){ stop(); start(); } }
+    if (e.key==='ArrowDown'){ el.bpm.value = Math.max(20, parseInt(el.bpm.value,10)-(e.shiftKey?5:1)); if (running){ stop(); start(); } }
+  });
+  </script>
+</body>
+</html>
