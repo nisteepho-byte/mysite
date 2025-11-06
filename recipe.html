@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Recipe — Nick Isteepho</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .wrap-page{max-width:900px;margin:90px auto 48px;padding:0 20px}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px}
+    .meta{color:var(--muted)}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media (max-width:820px){.grid2{grid-template-columns:1fr}}
+    .mini{font-size:12px;color:var(--muted)}
+    .home-icon:hover{ background: rgba(255,255,255,0.08); border-radius:50%; }
+  </style>
+</head>
+<body class="dark">
+  <header class="wrap culinary-header">
+    <a href="index.html" class="home-icon" title="Back to Home">⌂</a>
+    <div class="header-text">
+      <h1 id="title">Recipe</h1>
+      <p class="sub" id="sub">—</p>
+    </div>
+  </header>
+
+  <main class="wrap-page">
+    <section class="card">
+      <div class="meta" id="meta"></div>
+      <div class="grid2" style="margin-top:12px">
+        <div>
+          <label class="mini">Servings</label>
+          <input id="servings" class="input" type="number" min="1" value="2" style="width:140px"/>
+        </div>
+        <div>
+          <label class="mini">Actions</label><br/>
+          <button id="addPlan" class="btn primary" style="margin-right:8px">Add to Meal Plan</button>
+          <a id="back" class="btn" href="recipe-finder.html">Back to Finder</a>
+        </div>
+      </div>
+
+      <hr style="opacity:.2;border:none;border-top:1px solid rgba(255,255,255,.12);margin:16px 0"/>
+
+      <h3>Ingredients</h3>
+      <ul id="ings"></ul>
+
+      <h3>Steps</h3>
+      <ol id="steps"></ol>
+    </section>
+  </main>
+
+  <script>
+  // Same (minimal) dataset as finder
+  const RECIPES = [
+    {"id":"pasta-basil-chicken","title":"Chicken Tomato Basil Pasta","course":"Dinner","difficulty":"Easy","time":25,"servings":2,"diet":[],"tags":["pasta","basil","weeknight"],"ingredients":[{"qty":160,"unit":"g","item":"pasta"},{"qty":250,"unit":"g","item":"chicken breast"},{"qty":1,"unit":"tbsp","item":"olive oil"},{"qty":2,"unit":"cloves","item":"garlic"},{"qty":1,"unit":"piece","item":"onion"},{"qty":2,"unit":"piece","item":"tomato"},{"qty":8,"unit":"leaves","item":"basil"},{"qty":20,"unit":"g","item":"parmesan"}],"steps":["Boil salted water; cook pasta al dente.","Sauté onion and garlic in oil; add diced chicken; cook through.","Add chopped tomatoes; simmer; toss with pasta and basil.","Finish with grated parmesan."]},
+    {"id":"spinach-omelet","title":"Spinach & Parmesan Omelet","course":"Breakfast","difficulty":"Easy","time":10,"servings":1,"diet":["gluten-free"],"tags":["high-protein","quick"],"ingredients":[{"qty":2,"unit":"piece","item":"egg"},{"qty":40,"unit":"g","item":"spinach"},{"qty":10,"unit":"g","item":"parmesan"},{"qty":5,"unit":"g","item":"butter"}],"steps":["Beat eggs; melt butter; add egg; scatter spinach and parmesan; fold."]},
+    {"id":"tofu-broccoli-stirfry","title":"Ginger Soy Tofu & Broccoli","course":"Dinner","difficulty":"Medium","time":20,"servings":2,"diet":["vegan","gluten-free"],"tags":["stir-fry","easy"],"ingredients":[{"qty":300,"unit":"g","item":"tofu"},{"qty":200,"unit":"g","item":"broccoli"},{"qty":1,"unit":"tbsp","item":"soy sauce"},{"qty":10,"unit":"g","item":"ginger"},{"qty":1,"unit":"tbsp","item":"olive oil"}],"steps":["Stir-fry ginger in oil; add tofu; add broccoli; splash soy; serve hot."]},
+    {"id":"lemon-salmon","title":"Lemon Butter Salmon","course":"Dinner","difficulty":"Easy","time":18,"servings":2,"diet":["gluten-free"],"tags":["omega-3","sheet-pan"],"ingredients":[{"qty":320,"unit":"g","item":"salmon"},{"qty":10,"unit":"g","item":"butter"},{"qty":1,"unit":"piece","item":"lemon"},{"qty":1,"unit":"clove","item":"garlic"}],"steps":["Season salmon; dot with butter and garlic; bake 12–14 min; finish with lemon."]},
+    {"id":"banana-oat-pancakes","title":"Banana Oat Pancakes","course":"Breakfast","difficulty":"Medium","time":20,"servings":2,"diet":["vegetarian"],"tags":["oats","no-refined-sugar"],"ingredients":[{"qty":1,"unit":"piece","item":"banana"},{"qty":90,"unit":"g","item":"oats"},{"qty":1,"unit":"piece","item":"egg"},{"qty":120,"unit":"ml","item":"milk"},{"qty":5,"unit":"g","item":"butter"}],"steps":["Blend banana, oats, egg, milk; rest; pan-fry with butter; serve."]},
+    {"id":"garlic-egg-fried-rice","title":"Garlic Egg Fried Rice","course":"Lunch","difficulty":"Easy","time":15,"servings":2,"diet":[],"tags":["pantry","fast"],"ingredients":[{"qty":150,"unit":"g","item":"rice"},{"qty":2,"unit":"piece","item":"egg"},{"qty":2,"unit":"cloves","item":"garlic"},{"qty":1,"unit":"tbsp","item":"soy sauce"},{"qty":1,"unit":"tbsp","item":"olive oil"}],"steps":["Cook rice (or use day-old). Fry garlic, egg; add rice, soy; toss 2–3 min."]},
+    {"id":"chickpea-cucumber-salad","title":"Chickpea Cucumber Feta Salad","course":"Lunch","difficulty":"Easy","time":12,"servings":2,"diet":["vegetarian"],"tags":["fresh","no-cook"],"ingredients":[{"qty":150,"unit":"g","item":"chickpeas"},{"qty":1,"unit":"piece","item":"cucumber"},{"qty":40,"unit":"g","item":"feta"},{"qty":1,"unit":"tbsp","item":"olive oil"},{"qty":1,"unit":"piece","item":"lemon"}],"steps":["Chop cucumber; toss with chickpeas, feta, oil, lemon; season to taste."]},
+    {"id":"quinoa-bowl","title":"Quinoa Power Bowl","course":"Dinner","difficulty":"Medium","time":25,"servings":2,"diet":["vegetarian","gluten-free"],"tags":["balanced","meal-prep"],"ingredients":[{"qty":160,"unit":"g","item":"quinoa"},{"qty":100,"unit":"g","item":"spinach"},{"qty":1,"unit":"piece","item":"tomato"},{"qty":40,"unit":"g","item":"feta"},{"qty":1,"unit":"tbsp","item":"olive oil"}],"steps":["Cook quinoa; wilt spinach; assemble bowl with tomato, feta, oil."]}
+  ];
+
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+  const recipe = RECIPES.find(r=>r.id===id);
+
+  const $title = document.getElementById("title");
+  const $sub = document.getElementById("sub");
+  const $meta = document.getElementById("meta");
+  const $ings = document.getElementById("ings");
+  const $steps = document.getElementById("steps");
+  const $serv = document.getElementById("servings");
+  const $add = document.getElementById("addPlan");
+
+  if (!recipe){
+    $title.textContent = "Recipe not found";
+    document.getElementById("sub").textContent = "Check the link or go back.";
+  } else {
+    $title.textContent = recipe.title;
+    $sub.textContent = recipe.tags.map(t=>"#"+t).join(" ");
+    $meta.textContent = `${recipe.course} • ${recipe.difficulty} • ${recipe.time} min • serves ${recipe.servings}`;
+    $serv.value = recipe.servings;
+    renderIngs(recipe.ingredients);
+
+    $steps.innerHTML = "";
+    recipe.steps.forEach(s=>{ const li = document.createElement("li"); li.textContent = s; $steps.appendChild(li); });
+  }
+
+  function renderIngs(ings){
+    $ings.innerHTML = "";
+    ings.forEach(i=>{
+      const li = document.createElement("li");
+      li.textContent = `${i.qty} ${(i.unit||"g").toLowerCase()} ${i.item}`;
+      $ings.appendChild(li);
+    });
+  }
+
+  $serv.addEventListener("input", ()=>{
+    if (!recipe) return;
+    const sv = Math.max(1, parseInt($serv.value||recipe.servings,10));
+    const factor = sv / recipe.servings;
+    const scaled = recipe.ingredients.map(i=> ({...i, qty: Math.round(i.qty*factor*10)/10 }));
+    renderIngs(scaled);
+  });
+
+  $add.addEventListener("click", ()=>{
+    if (!recipe) return;
+    const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+    let plan = JSON.parse(localStorage.getItem("rf_plan")||"{}"); if (Object.keys(plan).length===0){ days.forEach(d=> plan[d]=[]); }
+    const day = days.find(d=> (plan[d]||[]).length<2) || "Mon";
+    plan[day].push(recipe.id);
+    localStorage.setItem("rf_plan", JSON.stringify(plan));
+    alert(`Added to ${day}`);
+  });
+  </script>
+</body>
+</html>
