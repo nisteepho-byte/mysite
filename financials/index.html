@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Financials — Overview</title>
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    .wrap{max-width:1000px;margin:90px auto 40px;padding:0 20px;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px;color:inherit}
+    .search{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .search input{flex:1;min-width:180px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:transparent;color:var(--fg)}
+    .search button{padding:10px 14px;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:white;cursor:pointer}
+    .muted{color:var(--muted)}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.15);font-size:12px;margin-right:6px}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+  </style>
+</head>
+<body class="dark">
+  <header class="site-wrap topbar" style="position:fixed;left:0;right:0;top:0">
+    <a class="home" href="../index.html">⌂</a>
+    <div class="links">
+      <a href="./index.html">Overview</a>
+      <a href="./statements.html">Statements</a>
+      <a href="./ratios.html">Ratios</a>
+      <a href="./valuation.html">Valuation</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>Financials</h1>
+    <p class="muted">Search a ticker, skim snapshots, then dive into statements, ratios, and a quick DCF sandbox.</p>
+
+    <div class="card">
+      <div class="search">
+        <input id="ticker" placeholder="Try AAPL or MSFT" value="AAPL"/>
+        <button id="go">Open</button>
+      </div>
+      <p class="muted" style="margin:8px 0 0">Data: mock (offline). Swap later for a real 10-K API.</p>
+    </div>
+
+    <div class="grid" style="margin-top:14px" id="snapshots"></div>
+  </main>
+
+  <script>
+  const DB = {
+    AAPL: {
+      name:"Apple Inc.",
+      years:["2024","2023","2022","2021"],
+      revenue:[383.3,383.3,394.3,365.8],
+      opIncome:[114.3,114.3,119.4,108.9],
+      netIncome:[97.0,97.0,99.8,94.7],
+      assets:[352.5,352.8,352.8,351.0],
+      equity:[74.1,62.2,50.7,63.1],
+      cfo:[110.5,110.5,122.2,104.0],
+      capex:[-10.5,-10.5,-12.1,-11.1],
+      shares:15.6,
+      price:210
+    },
+    MSFT: {
+      name:"Microsoft Corp.",
+      years:["2024","2023","2022","2021"],
+      revenue:[245.0,211.9,198.3,168.1],
+      opIncome:[107.0,88.5,83.4,69.9],
+      netIncome:[86.2,72.4,72.7,61.3],
+      assets:[512.8,411.9,364.8,333.8],
+      equity:[244.0,206.2,166.5,176.2],
+      cfo:[121.0,87.6,89.0,76.7],
+      capex:[-22.0,-24.8,-23.9,-22.7],
+      shares:7.45,
+      price:410
+    }
+  };
+
+  const $t = document.getElementById('ticker');
+  const $go = document.getElementById('go');
+  const $snap = document.getElementById('snapshots');
+
+  function fmtB(x){ return (x).toFixed(1) + "B"; }
+  function makeCard(tk){
+    const d = DB[tk];
+    if (!d) return '';
+    const rev = d.revenue[0], net = d.netIncome[0], margin = (net/rev*100).toFixed(1);
+    const eps = (net*1e9)/(d.shares*1e9);
+    const pe = (d.price / eps).toFixed(1);
+    return `
+      <a class="card" href="./statements.html?t=${tk}">
+        <h3>${tk} — ${d.name}</h3>
+        <p class="muted">FY ${d.years[0]}</p>
+        <div class="row" style="margin-top:6px">
+          <span class="pill">Revenue: <strong>${fmtB(rev)}</strong></span>
+          <span class="pill">Net: <strong>${fmtB(net)}</strong></span>
+          <span class="pill">Net Margin: <strong>${margin}%</strong></span>
+          <span class="pill">P/E*: <strong>${pe}</strong></span>
+        </div>
+      </a>`;
+  }
+  function render(){
+    $snap.innerHTML = makeCard('AAPL') + makeCard('MSFT');
+  }
+  $go.onclick = ()=>{
+    const tk = $t.value.trim().toUpperCase();
+    if (DB[tk]) location.href = `./statements.html?t=${tk}`;
+    else alert("Only AAPL / MSFT in mock for now.");
+  };
+  render();
+  </script>
+</body>
+</html>
