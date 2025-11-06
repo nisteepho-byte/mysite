@@ -1,69 +1,66 @@
 // financials/api.js
-// ---- Financial Modeling Prep client (with localStorage key support) ----
+// Minimal Financial Modeling Prep (FMP) client for plain HTML sites.
+// Stores your API key in localStorage so you don't hard-code it.
 
-// 1) Key source: localStorage takes precedence.
-//    Run in the console once:  localStorage.setItem('FMP_KEY','YOUR_REAL_KEY');
-const STORED = (typeof localStorage !== 'undefined') ? localStorage.getItem('FMP_KEY') : null;
+(function () {
+  const FMP_BASE = "https://financialmodelingprep.com/api/v3";
 
-// 2) Fallback hard-coded key (optional). Leave as "YOUR_FMP_KEY" if using localStorage only.
-const FALLBACK = "YOUR_FMP_KEY";
+  // --- Key handling ---
+  let FMP_KEY = (typeof localStorage !== "undefined" && localStorage.getItem("FMP_KEY")) || "";
 
-// Final key:
-let FMP_KEY = (STORED && STORED.trim()) ? STORED.trim() : FALLBACK;
-
-export function setFmpKey(k) {
-  try {
-    if (!k || !k.trim()) throw new Error("Empty key");
-    localStorage.setItem('FMP_KEY', k.trim());
+  function setFmpKey(k) {
+    if (!k || !k.trim()) return false;
     FMP_KEY = k.trim();
+    try { localStorage.setItem("FMP_KEY", FMP_KEY); } catch {}
     return true;
-  } catch (e) {
-    return false;
   }
-}
-
-export function needKey() {
-  return !FMP_KEY || FMP_KEY === "YOUR_FMP_KEY";
-}
-
-const FMP = "https://financialmodelingprep.com/api/v3";
-
-async function j(url) {
-  const r = await fetch(url);
-  if (!r.ok) {
-    const txt = await r.text().catch(()=>"");
-    throw new Error(`HTTP ${r.status} on ${url}\n${txt}`);
+  function needKey() {
+    return !FMP_KEY || FMP_KEY === "YOUR_FMP_KEY";
   }
-  return r.json();
-}
 
-export async function profile(tk) {
-  const [p] = await j(`${FMP}/profile/${encodeURIComponent(tk)}?apikey=${FMP_KEY}`);
-  return p || null;
-}
-export async function quote(tk) {
-  const [q] = await j(`${FMP}/quote/${encodeURIComponent(tk)}?apikey=${FMP_KEY}`);
-  return q || null;
-}
-export async function income(tk, limit=4) {
-  return j(`${FMP}/income-statement/${encodeURIComponent(tk)}?period=annual&limit=${limit}&apikey=${FMP_KEY}`);
-}
-export async function balance(tk, limit=4) {
-  return j(`${FMP}/balance-sheet-statement/${encodeURIComponent(tk)}?period=annual&limit=${limit}&apikey=${FMP_KEY}`);
-}
-export async function cashflow(tk, limit=4) {
-  return j(`${FMP}/cash-flow-statement/${encodeURIComponent(tk)}?period=annual&limit=${limit}&apikey=${FMP_KEY}`);
-}
-export async function keyMetrics(tk, limit=2) {
-  return j(`${FMP}/key-metrics/${encodeURIComponent(tk)}?period=annual&limit=${limit}&apikey=${FMP_KEY}`);
-}
+  // --- Fetch helpers ---
+  async function j(url) {
+    const r = await fetch(url);
+    if (!r.ok) {
+      const t = await r.text().catch(() => "");
+      throw new Error(`HTTP ${r.status} for ${url}\n${t}`);
+    }
+    return r.json();
+  }
+  function q(tk) { return encodeURIComponent((tk || "").trim().toUpperCase()); }
 
-// tiny utils
-export function fmtB(n) { return (n/1e9).toFixed(1) + "B"; }
-export function pct(n)  { return (n*100).toFixed(1) + "%"; }
-export function ylab(iso) { return (iso||"").slice(0,4); }
+  // --- Endpoints ---
+  async function profile(tk) {
+    const arr = await j(`${FMP_BASE}/profile/${q(tk)}?apikey=${FMP_KEY}`);
+    return Array.isArray(arr) ? arr[0] : null;
+  }
+  async function quote(tk) {
+    const arr = await j(`${FMP_BASE}/quote/${q(tk)}?apikey=${FMP_KEY}`);
+    return Array.isArray(arr) ? arr[0] : null;
+  }
+  async function income(tk, limit = 4) {
+    return j(`${FMP_BASE}/income-statement/${q(tk)}?period=annual&limit=${limit}&apikey=${FMP_KEY}`);
+  }
+  async function balance(tk, limit = 4) {
+    return j(`${FMP_BASE}/balance-sheet-statement/${q(tk)}?period=annual&limit=${limit}&apikey=${FMP_KEY}`);
+  }
+  async function cashflow(tk, limit = 4) {
+    return j(`${FMP_BASE}/cash-flow-statement/${q(tk)}?period=annual&limit=${limit}&apikey=${FMP_KEY}`);
+  }
+  async function keyMetrics(tk, limit = 4) {
+    return j(`${FMP_BASE}/key-metrics/${q(tk)}?period=annual&limit=${limit}&apikey=${FMP_KEY}`);
+  }
 
-// expose on window too (for non-module pages)
-if (typeof window !== 'undefined') {
-  window.__FMP = { setFmpKey, needKey, profile, quote, income, balance, cashflow, keyMetrics, fmtB, pct, ylab };
-}
+  // --- Tiny formatters ---
+  function y(iso) { return (iso || "").slice(0, 4); }
+  function b(n) { return typeof n === "number" ? (n / 1e9).toFixed(1) + "B" : "—"; }
+  function pct(n) { return typeof n === "number" ? (n * 100).toFixed(1) + "%" : "—"; }
+  function com(n) { return typeof n === "number" ? n.toLocaleString() : "—"; }
+
+  // Expose
+  window.__FMP = {
+    setFmpKey, needKey,
+    profile, quote, income, balance, cashflow, keyMetrics,
+    y, b, pct, com
+  };
+})();
