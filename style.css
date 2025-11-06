@@ -453,3 +453,9 @@ body .culinary-header .home-icon { color: var(--fg); }
 .rf-fav{ font-size:18px; user-select:none }
 .rf-fav:hover{ opacity:.85 }
 
+/* Make tab buttons & inputs feel consistent */
+.btn:hover{ opacity:.92 }
+.input:focus, .select:focus{ outline:2px solid var(--accent); outline-offset:2px }
+
+/* Keep meal-plan horizontally scrollable on small screens */
+.plan-wrap{ scrollbar-width: thin; }
