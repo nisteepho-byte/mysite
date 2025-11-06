@@ -1,147 +1,137 @@
 <!doctype html>
-<script src="./api.js?v=2"></script>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Financials — Statements</title>
-<link rel="stylesheet" href="../style.css" />
-<style>
-  .wrap{max-width:1100px;margin:90px auto 40px;padding:0 20px}
-  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
-  .tabs a{padding:8px 12px;border:1px solid rgba(255,255,255,.15);border-radius:10px;color:inherit}
-  .tabs a.active{border-color:var(--accent)}
-  .card{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px}
-  .table{width:100%;border-collapse:separate;border-spacing:0 8px}
-  .table th,.table td{padding:8px 10px}
-  .row{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
-  .pill{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.15);font-size:12px}
-  .muted{color:var(--muted)}
-  .spark{height:28px}
-</style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Statements</title>
+  <link rel="stylesheet" href="../style.css"/>
+  <style>
+    .wrap{max-width:1100px;margin:90px auto 40px;padding:0 20px}
+    .tabs{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px}
+    .tabs a{padding:8px 12px;border:1px solid rgba(255,255,255,.15);border-radius:10px}
+    .grid{display:grid;gap:12px}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:14px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:right}
+    th:first-child,td:first-child{text-align:left}
+    .muted{color:var(--muted)}
+    .home-icon{position:fixed;top:14px;left:16px;color:var(--fg);text-decoration:none}
+  </style>
 </head>
 <body class="dark">
-<header class="site-wrap topbar" style="position:fixed;left:0;right:0;top:0">
-  <a class="home" href="../index.html">⌂</a>
-  <div class="links">
-    <a href="./index.html">Overview</a>
-    <a href="./statements.html" style="border-bottom:1px solid currentColor">Statements</a>
-    <a href="./ratios.html">Ratios</a>
-    <a href="./valuation.html">Valuation</a>
-  </div>
-</header>
+  <a href="../index.html" class="home-icon" title="Back to Home">⌂</a>
 
-<main class="wrap">
-  <h1 id="title">Statements</h1>
-  <div class="row" id="pills"></div>
+  <main class="wrap">
+    <h1 id="title">Loading…</h1>
+    <div class="tabs">
+      <a id="tab-statements" href="#">Statements</a>
+      <a id="tab-ratios" href="#">Ratios</a>
+      <a id="tab-overview" href="./index.html">Overview</a>
+    </div>
 
-  <div class="tabs">
-    <a href="#" data-tab="is" class="active">Income Statement</a>
-    <a href="#" data-tab="bs">Balance Sheet</a>
-    <a href="#" data-tab="cf">Cash Flow</a>
-  </div>
+    <p id="warn" class="muted"></p>
 
-  <div id="view" class="card">Loading…</div>
-</main>
+    <div class="grid">
+      <section class="card">
+        <h3>Income Statement (Annual)</h3>
+        <div id="inc"></div>
+      </section>
+      <section class="card">
+        <h3>Balance Sheet (Annual)</h3>
+        <div id="bal"></div>
+      </section>
+      <section class="card">
+        <h3>Cash Flow (Annual)</h3>
+        <div id="cf"></div>
+      </section>
+    </div>
+  </main>
 
-<script src="./api.js"></script>
-<script>
-const tk = (new URLSearchParams(location.search).get('t')||'AAPL').toUpperCase();
-const $title = document.getElementById('title');
-const $pills = document.getElementById('pills');
-const $view  = document.getElementById('view');
+  <script src="./api.js?v=3"></script>
+  <script>
+    // --- read ticker from URL ---
+    const params = new URLSearchParams(location.search);
+    const T = (params.get("t") || "").toUpperCase().trim();
 
-function spark(arr){
-  if (!arr?.length) return '';
-  const max = Math.max(...arr), min = Math.min(...arr);
-  const pts = arr.map((v,i)=>{
-    const x = i*(100/(arr.length-1));
-    const y = 28 - ((v-min)/(max-min||1))*28;
-    return `${x},${y}`;
-  }).join(' ');
-  return `<svg class="spark" viewBox="0 0 100 28"><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
-}
-function tr(label, arr, unit="") {
-  const cols = (arr||[]).map(v => `<td>${(v??"—")=== "—" ? "—" : (typeof v==="number" ? (unit==="B"?__FMP.fmtB(v):v.toFixed ? v.toFixed(1):v) : v)}</td>`).join('');
-  return `<tr><td class="muted">${label}</td>${cols}</tr>`;
-}
-function yearsFrom(list){ return (list||[]).map(x=>__FMP.ylab(x?.date || x?.calendarYear)); }
+    const $title = document.getElementById("title");
+    const $warn = document.getElementById("warn");
+    const $inc = document.getElementById("inc");
+    const $bal = document.getElementById("bal");
+    const $cf = document.getElementById("cf");
 
-async function load() {
-  try{
-    const [p, q, is, bs, cf] = await Promise.all([
-      __FMP.profile(tk), __FMP.quote(tk), __FMP.income(tk,4), __FMP.balance(tk,4), __FMP.cashflow(tk,4)
-    ]);
-    $title.textContent = `${tk} — ${p?.companyName || "Unknown"}`;
-    const yrs = yearsFrom(is);
-    $pills.innerHTML = `
-      <span class="pill">Years: <strong>${yrs.join(' • ') || '—'}</strong></span>
-      <span class="pill">Price: <strong>${q?.price ?? '—'}</strong></span>
-      <span class="pill">MktCap: <strong>${q?.marketCap ? __FMP.fmtB(q.marketCap) : '—'}</strong></span>
-      <span class="pill">Sector: <strong>${p?.sector || '—'}</strong></span>
-    `;
+    // fix tab links with ticker
+    document.getElementById("tab-statements").href = `./statements.html?t=${encodeURIComponent(T)}`;
+    document.getElementById("tab-ratios").href = `./ratios.html?t=${encodeURIComponent(T)}`;
 
-    // cache for tabs
-    window.__DATA = { is, bs, cf, yrs };
-    render('is');
-  } catch (e) {
-    $view.innerHTML = `<p class="muted">Could not load ${tk}. Check your API key or ticker.</p>`;
-  }
-}
+    async function render(){
+      if (!T){ $title.textContent = "Missing ticker"; return; }
+      if (window.__FMP?.needKey()){
+        $warn.textContent = "Add your API key on the Overview page to load data.";
+        $title.textContent = T;
+        return;
+      }
+      try {
+        const [p, inc, bal, cf] = await Promise.all([
+          __FMP.profile(T), __FMP.income(T,4), __FMP.balance(T,4), __FMP.cashflow(T,4)
+        ]);
+        $title.textContent = `${T} — ${p?.companyName ?? ""}`;
+        $warn.textContent = "";
 
-function render(tab){
-  document.querySelectorAll('.tabs a').forEach(a=>a.classList.toggle('active', a.dataset.tab===tab));
-  const yrs = (window.__DATA?.yrs||[]).map(y=>`<th>${y}</th>`).join('');
-  if (tab==='is') {
-    const d = window.__DATA.is||[];
-    const rev = d.map(x=>x.revenue);
-    $view.innerHTML = `
-      <h3>Income Statement</h3>
-      ${spark(rev)}
-      <table class="table">
-        <thead><tr><th></th>${yrs}</tr></thead>
-        <tbody>
-          ${tr('Revenue (B)', d.map(x=>x.revenue),'B')}
-          ${tr('COGS (B)', d.map(x=>x.costOfRevenue),'B')}
-          ${tr('Operating Income (B)', d.map(x=>x.operatingIncome),'B')}
-          ${tr('Net Income (B)', d.map(x=>x.netIncome),'B')}
-          ${tr('Net Margin (%)', d.map(x=> x.revenue ? (x.netIncome/x.revenue*100) : null))}
-        </tbody>
-      </table>`;
-  } else if (tab==='bs') {
-    const d = window.__DATA.bs||[];
-    const assets = d.map(x=>x.totalAssets);
-    $view.innerHTML = `
-      <h3>Balance Sheet</h3>
-      ${spark(assets)}
-      <table class="table">
-        <thead><tr><th></th>${yrs}</tr></thead>
-        <tbody>
-          ${tr('Total Assets (B)', d.map(x=>x.totalAssets),'B')}
-          ${tr('Total Liabilities (B)', d.map(x=>x.totalLiabilities),'B')}
-          ${tr('Total Equity (B)', d.map(x=>x.totalStockholdersEquity),'B')}
-          ${tr('Cash & Equivalents (B)', d.map(x=>x.cashAndCashEquivalents),'B')}
-          ${tr('Leverage (A/E)', d.map(x=> (x.totalAssets/Math.max(x.totalStockholdersEquity||0.0001,0.0001) )))}
-        </tbody>
-      </table>`;
-  } else {
-    const d = window.__DATA.cf||[];
-    const cfo = d.map(x=>x.netCashProvidedByOperatingActivities);
-    $view.innerHTML = `
-      <h3>Cash Flow</h3>
-      ${spark(cfo)}
-      <table class="table">
-        <thead><tr><th></th>${yrs}</tr></thead>
-        <tbody>
-          ${tr('Cash from Ops (B)', d.map(x=>x.netCashProvidedByOperatingActivities),'B')}
-          ${tr('Capex (B)', d.map(x=>x.capitalExpenditure),'B')}
-          ${tr('FCF (B)', d.map(x=> (x.netCashProvidedByOperatingActivities + (x.capitalExpenditure||0)) ),'B')}
-        </tbody>
-      </table>`;
-  }
-}
-document.querySelectorAll('.tabs a').forEach(a=>a.addEventListener('click', e=>{e.preventDefault(); render(a.dataset.tab)}));
-load();
-</script>
+        // build columns by year
+        const years = (inc||[]).map(r=>__FMP.y(r.date));
+        function table(cols, rows){
+          const thead = `<thead><tr><th>Metric</th>${cols.map(c=>`<th>${c}</th>`).join("")}</tr></thead>`;
+          const body = rows.map(([label, vals]) =>
+            `<tr><td>${label}</td>${vals.map(v=>`<td>${v}</td>`).join("")}</tr>`).join("");
+          return `<table>${thead}<tbody>${body}</tbody></table>`;
+        }
+
+        // income rows
+        const incRows = [
+          ["Revenue",        inc.map(r => __FMP.com(r.revenue))],
+          ["Gross Profit",   inc.map(r => __FMP.com(r.grossProfit))],
+          ["Operating Inc.", inc.map(r => __FMP.com(r.operatingIncome))],
+          ["Net Income",     inc.map(r => __FMP.com(r.netIncome))],
+          ["EPS (basic)",    inc.map(r => r.eps ? r.eps.toFixed(2) : "—")],
+          ["Net Margin",     inc.map(r => (r.revenue && r.netIncome) ? ((r.netIncome/r.revenue)*100).toFixed(1)+'%' : '—')],
+        ];
+        $inc.innerHTML = table(years, incRows);
+
+        // balance rows
+        const balRows = [
+          ["Cash & Equivalents", bal.map(r => __FMP.com(r.cashAndCashEquivalents))],
+          ["Total Assets",       bal.map(r => __FMP.com(r.totalAssets))],
+          ["Total Liabilities",  bal.map(r => __FMP.com(r.totalLiabilities))],
+          ["Total Debt",         bal.map(r => __FMP.com(r.totalDebt))],
+          ["Shareholders' Equity", bal.map(r => __FMP.com(r.totalStockholdersEquity))],
+          ["Current Ratio",      bal.map((r,i) => {
+            const cr = (r.totalCurrentAssets && r.totalCurrentLiabilities)
+              ? (r.totalCurrentAssets / r.totalCurrentLiabilities) : null;
+            return cr ? cr.toFixed(2) : "—";
+          })],
+        ];
+        $bal.innerHTML = table(years, balRows);
+
+        // cash flow rows
+        const cfRows = [
+          ["Operating CF", cf.map(r => __FMP.com(r.netCashProvidedByOperatingActivities))],
+          ["Investing CF", cf.map(r => __FMP.com(r.netCashUsedForInvestingActivites || r.netCashUsedForInvestingActivities))],
+          ["Financing CF", cf.map(r => __FMP.com(r.netCashUsedProvidedByFinancingActivities))],
+          ["Free CF",      cf.map(r => __FMP.com(
+              (typeof r.freeCashFlow === "number") ? r.freeCashFlow
+              : ((r.netCashProvidedByOperatingActivities ?? 0) - (r.capitalExpenditure ?? 0))
+          ))],
+          ["CapEx",        cf.map(r => __FMP.com(r.capitalExpenditure))],
+        ];
+        $cf.innerHTML = table(years, cfRows);
+
+      } catch (e){
+        console.error(e);
+        $title.textContent = T;
+        $warn.textContent = `Could not load ${T}. Check your API key or ticker.`;
+      }
+    }
+    render();
+  </script>
 </body>
 </html>
