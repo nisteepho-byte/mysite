@@ -438,5 +438,9 @@ body:not(.dark) .footer{ border-color:#eee; }
   .econ-page .compare .wrap{ grid-template-columns: 1fr; }
 }
 
-/* Nice touch: subtle glow on the home icon when hovering on this page */
+/* subtle glow on the home icon when hovering on this page */
 .econ-page .home-icon:hover{ box-shadow:0 0 0 6px rgba(122,162,255,0.16); }
+
+/* ===== LYRIC MEMORY PAGE ===== */
+body .culinary-header .home-icon { color: var(--fg); }
+.lyric-page .home-icon:hover{ box-shadow:0 0 0 6px rgba(122,162,255,0.16); }
