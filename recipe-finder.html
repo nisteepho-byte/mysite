@@ -6,47 +6,39 @@
   <title>Recipe Finder — Nick Isteepho</title>
   <link rel="stylesheet" href="style.css"/>
   <style>
-    /* ===== Page-scoped styles (uses your design tokens) ===== */
+    /* Page scope */
     .rf-wrap{max-width:1100px;margin:90px auto 48px;padding:0 20px}
+    .tabs{display:flex;gap:10px;margin-bottom:12px}
+    .tab{padding:8px 12px;border:1px solid rgba(255,255,255,.15);border-radius:10px;cursor:pointer}
+    .tab[aria-selected="true"]{border-color:var(--accent)}
+
     .rf-grid{display:grid;grid-template-columns:320px 1fr;gap:16px}
-    @media (max-width: 980px){.rf-grid{grid-template-columns:1fr}}
-    .rf-card{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px}
-    .rf-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    .rf-input,.rf-select,.rf-chip-input{
-      width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);
-      background:transparent;color:var(--fg)
-    }
-    body:not(.dark) .rf-input,body:not(.dark) .rf-select,body:not(.dark) .rf-chip-input{border-color:#e6e7ef;color:#111}
-    .rf-btn{padding:10px 14px;border-radius:10px;border:1px solid var(--accent);background:transparent;color:var(--fg);cursor:pointer}
-    .rf-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-    .rf-btn.ghost{border-color:rgba(255,255,255,.18)}
-    .rf-badge{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px;color:var(--muted);font-size:12px}
-    .rf-grid-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-    .rf-recipe{display:flex;flex-direction:column;gap:8px;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px}
-    .rf-recipe h4{margin:0}
-    .rf-tag{display:inline-block;margin-right:6px;margin-top:6px;font-size:12px;border-radius:999px;border:1px solid rgba(255,255,255,.16);padding:4px 8px;color:var(--muted)}
-    .rf-meta{font-size:13px;color:var(--muted)}
-    .rf-divider{height:1px;background:rgba(255,255,255,.1);margin:10px 0}
-    .rf-mini{font-size:12px;color:var(--muted)}
-    .rf-chips{display:flex;gap:8px;flex-wrap:wrap}
-    .rf-chip{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.16);cursor:pointer}
-    .rf-chip[data-active="true"]{border-color:var(--accent)}
-    .rf-input-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .rf-stats{display:flex;gap:8px;flex-wrap:wrap}
-    .rf-stat{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:6px 8px;border-radius:8px;font-size:12px}
-    .rf-actions{display:flex;gap:8px;flex-wrap:wrap}
-    .rf-fav{cursor:pointer}
-    .rf-toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid rgba(255,255,255,.18);padding:10px 14px;border-radius:10px;display:none;z-index:9999}
-    .rf-list{margin:0 0 0 18px}
-    .rf-plan{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
-    .rf-day{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px;min-height:140px}
-    .rf-day h5{margin:0 0 6px}
-    .rf-pill{display:inline-flex;align-items:center;gap:6px;margin:6px 0;padding:6px 8px;border-radius:10px;border:1px solid rgba(255,255,255,.16);font-size:12px}
-    .rf-pill button{border:none;background:transparent;color:var(--muted);cursor:pointer}
-    .rf-footer{color:var(--muted);margin-top:8px}
-    .rf-empty{color:var(--muted);text-align:center;padding:20px;border:1px dashed rgba(255,255,255,.2);border-radius:10px}
-    /* drag */
-    .rf-day[aria-dragover="true"]{outline:2px dashed var(--accent);outline-offset:4px}
+    @media (max-width:980px){.rf-grid{grid-template-columns:1fr}}
+
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .input,.select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:transparent;color:var(--fg)}
+    body:not(.dark) .input,body:not(.dark) .select{border-color:#e6e7ef;color:#111}
+    .btn{padding:10px 14px;border-radius:10px;border:1px solid var(--accent);background:transparent;color:var(--fg);cursor:pointer}
+    .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+    .results{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+    .recipe{display:flex;flex-direction:column;gap:8px;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px}
+    .recipe h4{margin:0}
+    .meta{font-size:13px;color:var(--muted)}
+    .tag{display:inline-block;margin-right:6px;margin-top:6px;font-size:12px;border-radius:999px;border:1px solid rgba(255,255,255,.16);padding:4px 8px;color:var(--muted)}
+
+    /* Meal plan */
+    .plan-wrap{overflow-x:auto;padding-bottom:6px}
+    .plan{display:grid;grid-template-columns:repeat(7,minmax(160px,1fr));gap:10px;min-width:1120px}
+    .day{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px;min-height:140px}
+    .day h5{margin:0 0 6px}
+    .pill{display:inline-flex;align-items:center;gap:6px;margin:6px 0;padding:6px 8px;border-radius:10px;border:1px solid rgba(255,255,255,.16);font-size:12px}
+    .pill button{border:none;background:transparent;color:var(--muted);cursor:pointer}
+
+    .empty{color:var(--muted);text-align:center;padding:20px;border:1px dashed rgba(255,255,255,.2);border-radius:10px}
+    .mini{font-size:12px;color:var(--muted)}
+    .home-icon:hover{ background: rgba(255,255,255,0.08); border-radius:50%; }
   </style>
 </head>
 <body class="dark">
@@ -54,199 +46,96 @@
     <a href="index.html" class="home-icon" title="Back to Home">⌂</a>
     <div class="header-text">
       <h1>Recipe Finder</h1>
-      <p class="sub">Search, filter, plan your week, and auto-build a shopping list. Complex logic, simple vibes.</p>
+      <p class="sub">Clean list, simple filters, solid meal plan. Clicking a recipe opens its own page.</p>
     </div>
   </header>
 
   <main class="rf-wrap">
-    <div class="rf-grid">
-      <!-- ===== LEFT: Controls ===== -->
-      <aside class="rf-card">
-        <h3>Find Recipes</h3>
-
-        <div class="rf-row">
-          <input id="q" class="rf-input" placeholder="Search by name, ingredient, or tag… (e.g., “chicken basil pasta”)"/>
-        </div>
-
-        <div class="rf-row">
-          <span class="rf-badge">Match</span>
-          <div class="rf-chips" id="modeChips">
-            <span class="rf-chip" data-key="and" data-active="true">All terms (AND)</span>
-            <span class="rf-chip" data-key="or">Any term (OR)</span>
-            <span class="rf-chip" data-key="fuzzy">Fuzzy</span>
-          </div>
-        </div>
-
-        <div class="rf-input-row" style="margin-top:8px">
-          <select id="diet" class="rf-select">
-            <option value="">Any diet</option>
-            <option value="vegan">Vegan</option>
-            <option value="vegetarian">Vegetarian</option>
-            <option value="gluten-free">Gluten-free</option>
-          </select>
-          <select id="course" class="rf-select">
-            <option value="">Any course</option>
-            <option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option>
-          </select>
-        </div>
-
-        <div class="rf-input-row" style="margin-top:8px">
-          <select id="difficulty" class="rf-select">
-            <option value="">Any difficulty</option>
-            <option>Easy</option><option>Medium</option><option>Hard</option>
-          </select>
-          <select id="time" class="rf-select">
-            <option value="">Any time</option>
-            <option value="15">≤ 15 min</option>
-            <option value="30">≤ 30 min</option>
-            <option value="45">≤ 45 min</option>
-            <option value="60">≤ 60 min</option>
-          </select>
-        </div>
-
-        <div class="rf-input-row" style="margin-top:8px">
-          <input id="maxIng" class="rf-input" type="number" min="1" placeholder="Max ingredients (optional)"/>
-          <input id="exclude" class="rf-input" placeholder="Exclude ingredients (comma: mushrooms, olives)"/>
-        </div>
-
-        <div class="rf-input-row" style="margin-top:8px">
-          <input id="pantry" class="rf-input" placeholder="Your pantry (comma: chicken, basil, rice)"/>
-          <input id="minPantry" class="rf-input" type="number" min="0" max="100" value="0" placeholder="Min pantry match %"/>
-        </div>
-
-        <div class="rf-row" style="margin-top:8px">
-          <select id="sort" class="rf-select">
-            <option value="relevance">Sort: Relevance</option>
-            <option value="pantry">Pantry fit</option>
-            <option value="time">Quickest</option>
-            <option value="health">Healthiest</option>
-          </select>
-          <button id="search" class="rf-btn primary">Search</button>
-          <button id="feeling" class="rf-btn">I’m Feeling Hungry</button>
-        </div>
-
-        <div class="rf-divider"></div>
-
-        <h4>Meal Plan</h4>
-        <div class="rf-plan" id="plan">
-          <!-- Days injected -->
-        </div>
-        <div class="rf-footer">
-          <button id="shopList" class="rf-btn primary">Build Shopping List</button>
-          <button id="clearPlan" class="rf-btn ghost">Clear Plan</button>
-        </div>
-      </aside>
-
-      <!-- ===== RIGHT: Results & Detail ===== -->
-      <section class="rf-card">
-        <div class="rf-row" style="justify-content:space-between;align-items:center">
-          <div class="rf-stats">
-            <span class="rf-stat">Results: <strong id="count">0</strong></span>
-            <span class="rf-stat">Favorites: <strong id="favCount">0</strong></span>
-            <span class="rf-stat">History: <strong id="histCount">0</strong></span>
-          </div>
-          <div class="rf-row">
-            <button id="showFavs" class="rf-btn">Show Favorites</button>
-            <button id="showAll" class="rf-btn ghost">Show All</button>
-          </div>
-        </div>
-
-        <div class="rf-grid-results" id="results"></div>
-
-        <div class="rf-divider"></div>
-
-        <div id="detail" class="rf-card" style="display:none">
-          <div class="rf-row" style="justify-content:space-between">
-            <h3 id="dTitle">Title</h3>
-            <div class="rf-row">
-              <span id="dFav" class="rf-fav" title="Toggle favorite">☆</span>
-              <span class="rf-badge" id="dTags"></span>
-            </div>
-          </div>
-          <p class="rf-meta" id="dMeta"></p>
-          <div class="rf-input-row">
-            <div>
-              <label class="rf-mini">Servings</label>
-              <input id="dServings" class="rf-input" type="number" min="1" value="2"/>
-            </div>
-            <div>
-              <label class="rf-mini">Nutrition (per serving)</label>
-              <div id="dNutri" class="rf-mini">—</div>
-            </div>
-          </div>
-
-          <div class="rf-divider"></div>
-
-          <h4>Ingredients</h4>
-          <ul id="dIngs" class="rf-list"></ul>
-
-          <h4>Steps</h4>
-          <ol id="dSteps" class="rf-list"></ol>
-
-          <div class="rf-actions">
-            <button id="addToPlan" class="rf-btn primary">Add to Meal Plan (drag me)</button>
-            <button id="copyList" class="rf-btn">Copy Ingredients</button>
-          </div>
-        </div>
-
-        <div id="empty" class="rf-empty">Use the controls to search. Or hit <em>I’m Feeling Hungry</em> for a random pick.</div>
-      </section>
+    <div class="tabs">
+      <button class="tab" id="tab-search" aria-selected="true">Search</button>
+      <button class="tab" id="tab-plan" aria-selected="false">Meal Plan</button>
     </div>
+
+    <!-- SEARCH VIEW -->
+    <section id="view-search">
+      <div class="rf-grid">
+        <!-- Filters -->
+        <aside class="card">
+          <h3>Find Recipes</h3>
+          <input id="q" class="input" placeholder="Search (name, ingredient, tag)…"/>
+          <div class="row" style="margin-top:8px">
+            <select id="diet" class="select">
+              <option value="">Any diet</option>
+              <option value="vegan">Vegan</option>
+              <option value="vegetarian">Vegetarian</option>
+              <option value="gluten-free">Gluten-free</option>
+            </select>
+            <select id="course" class="select">
+              <option value="">Any course</option>
+              <option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option>
+            </select>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <select id="difficulty" class="select">
+              <option value="">Any difficulty</option>
+              <option>Easy</option><option>Medium</option><option>Hard</option>
+            </select>
+            <select id="time" class="select">
+              <option value="">Any time</option>
+              <option value="15">≤ 15 min</option>
+              <option value="30">≤ 30 min</option>
+              <option value="45">≤ 45 min</option>
+              <option value="60">≤ 60 min</option>
+            </select>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <input id="pantry" class="input" placeholder="Pantry to match (comma: chicken, basil)"/>
+            <select id="sort" class="select">
+              <option value="relevance">Sort: Relevance</option>
+              <option value="time">Quickest</option>
+            </select>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <button id="search" class="btn primary">Search</button>
+            <button id="showAll" class="btn">Show All</button>
+          </div>
+          <p class="mini" style="margin-top:8px">Tip: click a result’s **Open** to view it on its own page.</p>
+        </aside>
+
+        <!-- Results -->
+        <section class="card">
+          <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div class="mini">Results: <strong id="count">0</strong></div>
+            <button id="goPlan" class="btn">Go to Meal Plan</button>
+          </div>
+          <div id="results" class="results"></div>
+          <div id="empty" class="empty">Search to see recipes, or press “Show All”.</div>
+        </section>
+      </div>
+    </section>
+
+    <!-- PLAN VIEW -->
+    <section id="view-plan" hidden>
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <h3>Meal Plan</h3>
+          <div class="row">
+            <button id="shopList" class="btn primary">Build Shopping List</button>
+            <button id="clearPlan" class="btn">Clear</button>
+          </div>
+        </div>
+        <div class="plan-wrap">
+          <div id="plan" class="plan"></div>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <div class="rf-toast" id="toast"></div>
-
   <script>
-  /* ===== Data ===== */
-  const NUTRITION = {
-    // per gram (g) unless noted
-    "chicken breast": { kcal: 1.65, protein: 0.31, carbs: 0, fat: 0.036 },
-    "olive oil":      { kcal: 8.84, protein: 0, carbs: 0, fat: 1 },
-    "garlic":         { kcal: 1.49, protein: 0.063, carbs: 0.33, fat: 0.005 },
-    "onion":          { kcal: 0.4, protein: 0.011, carbs: 0.09, fat: 0.001 },
-    "tomato":         { kcal: 0.18, protein: 0.009, carbs: 0.039, fat: 0.002 },
-    "pasta":          { kcal: 3.57, protein: 0.129, carbs: 0.75, fat: 0.014 }, // dry
-    "basil":          { kcal: 2.3, protein: 0.032, carbs: 0.234, fat: 0.004 },
-    "parmesan":       { kcal: 4.31, protein: 0.38, carbs: 0.042, fat: 0.29 },
-    "egg":            { kcal: 1.55, protein: 0.13, carbs: 0.011, fat: 0.11 },  // per g
-    "spinach":        { kcal: 0.23, protein: 0.029, carbs: 0.036, fat: 0.004 },
-    "rice":           { kcal: 3.65, protein: 0.07, carbs: 0.8, fat: 0.01 },   // dry
-    "tofu":           { kcal: 0.76, protein: 0.08, carbs: 0.015, fat: 0.048 },
-    "soy sauce":      { kcal: 0.53, protein: 0.081, carbs: 0.053, fat: 0.006 },
-    "ginger":         { kcal: 0.8, protein: 0.018, carbs: 0.18, fat: 0.007 },
-    "broccoli":       { kcal: 0.34, protein: 0.028, carbs: 0.07, fat: 0.004 },
-    "salmon":         { kcal: 2.08, protein: 0.20, carbs: 0, fat: 0.13 },
-    "lemon":          { kcal: 0.29, protein: 0.011, carbs: 0.093, fat: 0.003 },
-    "butter":         { kcal: 7.17, protein: 0.007, carbs: 0.002, fat: 0.81 },
-    "flour":          { kcal: 3.64, protein: 0.10, carbs: 0.76, fat: 0.01 },
-    "milk":           { kcal: 0.64, protein: 0.033, carbs: 0.05, fat: 0.036 },
-    "banana":         { kcal: 0.89, protein: 0.011, carbs: 0.23, fat: 0.003 },
-    "oats":           { kcal: 3.89, protein: 0.17, carbs: 0.66, fat: 0.07 },
-    "chickpeas":      { kcal: 3.64, protein: 0.19, carbs: 0.61, fat: 0.06 }, // dry
-    "cucumber":       { kcal: 0.15, protein: 0.006, carbs: 0.036, fat: 0.001,
-    },
-    "feta":           { kcal: 2.64, protein: 0.14, carbs: 0.04, fat: 0.21 },
-    "quinoa":         { kcal: 3.68, protein: 0.14, carbs: 0.64, fat: 0.06 }
-  };
-
-  // unit → grams (approximate)
-  const UNIT_TO_G = {
-    g:1, gram:1, grams:1,
-    kg:1000,
-    ml:1, // water-ish density fallback
-    l:1000,
-    cup:240, cups:240,
-    tbsp:15, tbspn:15, tablespoon:15, tablespoons:15,
-    tsp:5, teaspoon:5, teaspoons:5,
-    piece:50, pieces:50, clove:5, cloves:5, leaf:1, leaves:1, slice:30, slices:30
-  };
-
+  /* Shared demo data (duplicate in recipe.html too) */
   const RECIPES = [
-    {
-      id:"pasta-basil-chicken",
-      title:"Chicken Tomato Basil Pasta",
-      course:"Dinner", difficulty:"Easy", time:25, servings:2,
-      diet:[], tags:["pasta","basil","weeknight"],
+    { id:"pasta-basil-chicken", title:"Chicken Tomato Basil Pasta",
+      course:"Dinner", difficulty:"Easy", time:25, servings:2, diet:[], tags:["pasta","basil","weeknight"],
       ingredients:[
         { qty:160, unit:"g", item:"pasta" },
         { qty:250, unit:"g", item:"chicken breast" },
@@ -259,567 +148,184 @@
       ],
       steps:[
         "Boil salted water; cook pasta al dente.",
-        "Sauté onion and garlic in olive oil; add diced chicken; cook through.",
-        "Add chopped tomatoes; simmer 5 min; toss with pasta and basil.",
+        "Sauté onion and garlic in oil; add diced chicken; cook through.",
+        "Add chopped tomatoes; simmer; toss with pasta and basil.",
         "Finish with grated parmesan."
       ]
     },
-    {
-      id:"spinach-omelet",
-      title:"Spinach & Parmesan Omelet",
-      course:"Breakfast", difficulty:"Easy", time:10, servings:1,
-      diet:["gluten-free"], tags:["high-protein","quick"],
-      ingredients:[
-        { qty:2, unit:"piece", item:"egg" },
-        { qty:40, unit:"g", item:"spinach" },
-        { qty:10, unit:"g", item:"parmesan" },
-        { qty:5, unit:"g", item:"butter" }
-      ],
-      steps:["Beat eggs; melt butter; add egg; scatter spinach and parmesan; fold." ]
-    },
-    {
-      id:"tofu-broccoli-stirfry",
-      title:"Ginger Soy Tofu & Broccoli",
-      course:"Dinner", difficulty:"Medium", time:20, servings:2,
-      diet:["vegan","gluten-free"], tags:["stir-fry","easy"],
-      ingredients:[
-        { qty:300, unit:"g", item:"tofu" },
-        { qty:200, unit:"g", item:"broccoli" },
-        { qty:1, unit:"tbsp", item:"soy sauce" },
-        { qty:10, unit:"g", item:"ginger" },
-        { qty:1, unit:"tbsp", item:"olive oil" }
-      ],
-      steps:["Stir-fry ginger in oil; add tofu; add broccoli; splash soy; serve hot." ]
-    },
-    {
-      id:"lemon-salmon",
-      title:"Lemon Butter Salmon",
-      course:"Dinner", difficulty:"Easy", time:18, servings:2,
-      diet:["gluten-free"], tags:["omega-3","sheet-pan"],
-      ingredients:[
-        { qty:320, unit:"g", item:"salmon" },
-        { qty:10, unit:"g", item:"butter" },
-        { qty:1, unit:"piece", item:"lemon" },
-        { qty:1, unit:"clove", item:"garlic" }
-      ],
-      steps:["Season salmon; dot with butter and garlic; bake 12–14 min; finish with lemon." ]
-    },
-    {
-      id:"banana-oat-pancakes",
-      title:"Banana Oat Pancakes",
-      course:"Breakfast", difficulty:"Medium", time:20, servings:2,
-      diet:["vegetarian"], tags:["oats","no-refined-sugar"],
-      ingredients:[
-        { qty:1, unit:"piece", item:"banana" },
-        { qty:90, unit:"g", item:"oats" },
-        { qty:1, unit:"piece", item:"egg" },
-        { qty:120, unit:"ml", item:"milk" },
-        { qty:5, unit:"g", item:"butter" }
-      ],
-      steps:["Blend banana, oats, egg, milk; rest; pan-fry with butter; serve." ]
-    },
-    {
-      id:"chickpea-cucumber-salad",
-      title:"Chickpea Cucumber Feta Salad",
-      course:"Lunch", difficulty:"Easy", time:12, servings:2,
-      diet:["vegetarian"], tags:["fresh","no-cook"],
-      ingredients:[
-        { qty:150, unit:"g", item:"chickpeas" },
-        { qty:1, unit:"piece", item:"cucumber" },
-        { qty:40, unit:"g", item:"feta" },
-        { qty:1, unit:"tbsp", item:"olive oil" },
-        { qty:1, unit:"piece", item:"lemon" }
-      ],
-      steps:["Chop cucumber; toss with chickpeas, feta, oil, lemon; season to taste." ]
-    },
-    {
-      id:"garlic-egg-fried-rice",
-      title:"Garlic Egg Fried Rice",
-      course:"Lunch", difficulty:"Easy", time:15, servings:2,
-      diet:[], tags:["pantry","fast"],
-      ingredients:[
-        { qty:150, unit:"g", item:"rice" },
-        { qty:2, unit:"piece", item:"egg" },
-        { qty:2, unit:"cloves", item:"garlic" },
-        { qty:1, unit:"tbsp", item:"soy sauce" },
-        { qty:1, unit:"tbsp", item:"olive oil" }
-      ],
-      steps:["Cook rice (or use day-old). Fry garlic, egg; add rice, soy; toss 2–3 min." ]
-    },
-    {
-      id:"quinoa-bowl",
-      title:"Quinoa Power Bowl",
-      course:"Dinner", difficulty:"Medium", time:25, servings:2,
-      diet:["vegetarian","gluten-free"], tags:["balanced","meal-prep"],
-      ingredients:[
-        { qty:160, unit:"g", item:"quinoa" },
-        { qty:100, unit:"g", item:"spinach" },
-        { qty:1, unit:"piece", item:"tomato" },
-        { qty:40, unit:"g", item:"feta" },
-        { qty:1, unit:"tbsp", item:"olive oil" }
-      ],
-      steps:["Cook quinoa; wilt spinach; assemble bowl with tomato, feta, oil." ]
-    }
+    { id:"spinach-omelet", title:"Spinach & Parmesan Omelet",
+      course:"Breakfast", difficulty:"Easy", time:10, servings:1, diet:["gluten-free"], tags:["high-protein","quick"],
+      ingredients:[{qty:2,unit:"piece",item:"egg"},{qty:40,unit:"g",item:"spinach"},{qty:10,unit:"g",item:"parmesan"},{qty:5,unit:"g",item:"butter"}],
+      steps:["Beat eggs; melt butter; add egg; scatter spinach and parmesan; fold."] },
+    { id:"tofu-broccoli-stirfry", title:"Ginger Soy Tofu & Broccoli",
+      course:"Dinner", difficulty:"Medium", time:20, servings:2, diet:["vegan","gluten-free"], tags:["stir-fry","easy"],
+      ingredients:[{qty:300,unit:"g",item:"tofu"},{qty:200,unit:"g",item:"broccoli"},{qty:1,unit:"tbsp",item:"soy sauce"},{qty:10,unit:"g",item:"ginger"},{qty:1,unit:"tbsp",item:"olive oil"}],
+      steps:["Stir-fry ginger in oil; add tofu; add broccoli; splash soy; serve hot."] },
+    { id:"lemon-salmon", title:"Lemon Butter Salmon",
+      course:"Dinner", difficulty:"Easy", time:18, servings:2, diet:["gluten-free"], tags:["omega-3","sheet-pan"],
+      ingredients:[{qty:320,unit:"g",item:"salmon"},{qty:10,unit:"g",item:"butter"},{qty:1,unit:"piece",item:"lemon"},{qty:1,unit:"clove",item:"garlic"}],
+      steps:["Season salmon; dot with butter and garlic; bake 12–14 min; finish with lemon."] },
+    { id:"banana-oat-pancakes", title:"Banana Oat Pancakes",
+      course:"Breakfast", difficulty:"Medium", time:20, servings:2, diet:["vegetarian"], tags:["oats","no-refined-sugar"],
+      ingredients:[{qty:1,unit:"piece",item:"banana"},{qty:90,unit:"g",item:"oats"},{qty:1,unit:"piece",item:"egg"},{qty:120,unit:"ml",item:"milk"},{qty:5,unit:"g",item:"butter"}],
+      steps:["Blend banana, oats, egg, milk; rest; pan-fry with butter; serve."] },
+    { id:"garlic-egg-fried-rice", title:"Garlic Egg Fried Rice",
+      course:"Lunch", difficulty:"Easy", time:15, servings:2, diet:[], tags:["pantry","fast"],
+      ingredients:[{qty:150,unit:"g",item:"rice"},{qty:2,unit:"piece",item:"egg"},{qty:2,unit:"cloves",item:"garlic"},{qty:1,unit:"tbsp",item:"soy sauce"},{qty:1,unit:"tbsp",item:"olive oil"}],
+      steps:["Cook rice (or use day-old). Fry garlic, egg; add rice, soy; toss 2–3 min."] },
+    { id:"chickpea-cucumber-salad", title:"Chickpea Cucumber Feta Salad",
+      course:"Lunch", difficulty:"Easy", time:12, servings:2, diet:["vegetarian"], tags:["fresh","no-cook"],
+      ingredients:[{qty:150,unit:"g",item:"chickpeas"},{qty:1,unit:"piece",item:"cucumber"},{qty:40,unit:"g",item:"feta"},{qty:1,unit:"tbsp",item:"olive oil"},{qty:1,unit:"piece",item:"lemon"}],
+      steps:["Chop cucumber; toss with chickpeas, feta, oil, lemon; season to taste."] },
+    { id:"quinoa-bowl", title:"Quinoa Power Bowl",
+      course:"Dinner", difficulty:"Medium", time:25, servings:2, diet:["vegetarian","gluten-free"], tags:["balanced","meal-prep"],
+      ingredients:[{qty:160,unit:"g",item:"quinoa"},{qty:100,unit:"g",item:"spinach"},{qty:1,unit:"piece",item:"tomato"},{qty:40,unit:"g",item:"feta"},{qty:1,unit:"tbsp",item:"olive oil"}],
+      steps:["Cook quinoa; wilt spinach; assemble bowl with tomato, feta, oil."] }
   ];
 
-  /* ===== Utils ===== */
-  const stopWords = new Set(["the","and","a","of","to","with","on","in","for","&","-","—"]);
-
-  function toast(msg){
-    const t = document.getElementById("toast");
-    t.textContent = msg;
-    t.style.display = "block";
-    setTimeout(()=> t.style.display = "none", 1600);
-  }
-
-  function tokenizeQuery(q){
-    return q.toLowerCase()
-      .replace(/[^\w\s'-]/g," ")
-      .split(/\s+/)
-      .filter(x=>x && !stopWords.has(x));
-  }
-
-  function includesFuzzy(textTokens, term){
-    // term must appear within edit distance 1 or as substring
-    const s = term;
-    for (const tok of textTokens){
-      if (tok.includes(s)) return true;
-      if (Math.abs(tok.length - s.length) <= 1){
-        let diff=0; // quick Levenshtein-ish
-        const L = Math.min(tok.length, s.length);
-        for (let i=0;i<L;i++) if (tok[i]!==s[i]) diff++;
-        diff += Math.abs(tok.length - s.length);
-        if (diff<=1) return true;
-      }
-    }
-    return false;
-  }
-
-  function normalizeUnit(unit){ return (unit||"g").toLowerCase().trim(); }
-  function toGrams(qty, unit){
-    const u = normalizeUnit(unit);
-    const factor = UNIT_TO_G[u] ?? 1;
-    return qty * factor;
-  }
-
-  function nutritionForIngredient(ing){
-    const base = NUTRITION[ing.item];
-    if (!base) return { kcal:0, protein:0, carbs:0, fat:0 };
-    const grams = toGrams(ing.qty, ing.unit);
-    return {
-      kcal: base.kcal * grams,
-      protein: base.protein * grams,
-      carbs: base.carbs * grams,
-      fat: base.fat * grams
-    };
-  }
-
-  function nutritionForRecipe(recipe, servingsOverride){
-    const s = servingsOverride ?? recipe.servings;
-    const total = recipe.ingredients
-      .map(nutritionForIngredient)
-      .reduce((a,b)=>({kcal:a.kcal+b.kcal,protein:a.protein+b.protein,carbs:a.carbs+b.carbs,fat:a.fat+b.fat}),
-              {kcal:0, protein:0, carbs:0, fat:0});
-    return {
-      kcal: Math.round(total.kcal / s),
-      protein: Math.round(total.protein / s),
-      carbs: Math.round(total.carbs / s),
-      fat: Math.round(total.fat / s)
-    };
-  }
-
-  function scaleIngredients(ingredients, factor){
-    return ingredients.map(ing => ({...ing, qty: round1(ing.qty * factor)}));
-  }
-
-  function round1(n){ return Math.round(n*10)/10; }
-
-  function textTokensRecipe(r){
-    const t = [
-      r.title,
-      r.tags.join(" "),
-      r.ingredients.map(i => i.item).join(" "),
-      r.course, r.difficulty, r.diet.join(" ")
-    ].join(" ").toLowerCase().replace(/[^\w\s'-]/g," ");
-    return t.split(/\s+/).filter(Boolean);
-  }
-
-  function pantryScore(recipe, pantrySet){
-    if (!pantrySet || pantrySet.size===0) return 0;
-    const need = new Set(recipe.ingredients.map(i=>i.item));
-    let have = 0;
-    need.forEach(i=>{ if (pantrySet.has(i)) have++; });
-    return Math.round((have / need.size) * 100);
-  }
-
-  /* ===== App State ===== */
-  let favorites = new Set(JSON.parse(localStorage.getItem("rf_favs")||"[]"));
-  let history   = JSON.parse(localStorage.getItem("rf_hist")||"[]"); // ids
-  let currentList = RECIPES.slice();
-  let selected = null; // recipe object
-  let plan = JSON.parse(localStorage.getItem("rf_plan")||"{}"); // {Mon:[id,id],...}
-
+  /* State */
   const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-  if (Object.keys(plan).length===0){ days.forEach(d=> plan[d]=[]); }
+  let plan = JSON.parse(localStorage.getItem("rf_plan")||"{}"); if (Object.keys(plan).length===0){ days.forEach(d=> plan[d]=[]); }
+  const $results = document.getElementById("results");
+  const $count = document.getElementById("count");
+  const $empty = document.getElementById("empty");
+  const $planBox = document.getElementById("plan");
 
-  /* ===== UI Refs ===== */
-  const $q        = document.getElementById("q");
-  const $diet     = document.getElementById("diet");
-  const $course   = document.getElementById("course");
-  const $diff     = document.getElementById("difficulty");
-  const $time     = document.getElementById("time");
-  const $maxIng   = document.getElementById("maxIng");
-  const $exclude  = document.getElementById("exclude");
-  const $pantry   = document.getElementById("pantry");
-  const $minPan   = document.getElementById("minPantry");
-  const $sort     = document.getElementById("sort");
-
-  const $count    = document.getElementById("count");
-  const $favCount = document.getElementById("favCount");
-  const $histCount= document.getElementById("histCount");
-  const $results  = document.getElementById("results");
-  const $detail   = document.getElementById("detail");
-  const $empty    = document.getElementById("empty");
-
-  const $dTitle   = document.getElementById("dTitle");
-  const $dMeta    = document.getElementById("dMeta");
-  const $dTags    = document.getElementById("dTags");
-  const $dServings= document.getElementById("dServings");
-  const $dNutri   = document.getElementById("dNutri");
-  const $dIngs    = document.getElementById("dIngs");
-  const $dSteps   = document.getElementById("dSteps");
-  const $dFav     = document.getElementById("dFav");
-  const $planBox  = document.getElementById("plan");
-
-  /* ===== Renderers ===== */
-  function renderPlan(){
-    $planBox.innerHTML = "";
-    days.forEach(d=>{
-      const box = document.createElement("div");
-      box.className = "rf-day";
-      box.dataset.day = d;
-      box.innerHTML = `<h5>${d}</h5>`;
-      plan[d].forEach(id=>{
-        const r = RECIPES.find(x=>x.id===id);
-        const pill = document.createElement("div");
-        pill.className="rf-pill";
-        pill.draggable=true;
-        pill.dataset.id=id;
-        pill.innerHTML = `<span>🍽️</span><span>${r.title}</span><button title="Remove" data-remove="${id}">✕</button>`;
-        box.appendChild(pill);
-      });
-      const emptyNote = document.createElement("div");
-      emptyNote.className = "rf-mini";
-      emptyNote.style.marginTop = "6px";
-      emptyNote.textContent = plan[d].length ? "" : "Drop recipes here";
-      box.appendChild(emptyNote);
-
-      // drag events
-      box.addEventListener("dragover", e=>{ e.preventDefault(); box.setAttribute("aria-dragover","true"); });
-      box.addEventListener("dragleave", ()=> box.removeAttribute("aria-dragover"));
-      box.addEventListener("drop", e=>{
-        e.preventDefault(); box.removeAttribute("aria-dragover");
-        const id = e.dataTransfer.getData("text/recipe-id");
-        if (!id) return;
-        plan[d].push(id);
-        persistPlan();
-        renderPlan();
-        toast(`Added to ${d}`);
-      });
-      box.addEventListener("click", e=>{
-        const id = e.target?.dataset?.remove;
-        if (!id) return;
-        plan[d] = plan[d].filter(x=>x!==id);
-        persistPlan();
-        renderPlan();
-      });
-
-      $planBox.appendChild(box);
+  /* Simple search (clean + predictable) */
+  function runSearch(){
+    const q = document.getElementById("q").value.trim().toLowerCase();
+    const diet = document.getElementById("diet").value;
+    const course = document.getElementById("course").value;
+    const diff = document.getElementById("difficulty").value;
+    const time = parseInt(document.getElementById("time").value||"0",10) || Infinity;
+    const pantry = new Set((document.getElementById("pantry").value||"").toLowerCase().split(",").map(s=>s.trim()).filter(Boolean));
+    let list = RECIPES.filter(r=>{
+      if (diet && !r.diet.includes(diet)) return false;
+      if (course && r.course!==course) return false;
+      if (diff && r.difficulty!==diff) return false;
+      if (r.time > time) return false;
+      const text = (r.title+" "+r.tags.join(" ")+" "+r.ingredients.map(i=>i.item).join(" ")).toLowerCase();
+      if (q && !text.includes(q)) return false;
+      // pantry bias computed later
+      return true;
+    }).map(r=>{
+      const need = new Set(r.ingredients.map(i=>i.item));
+      let have = 0; need.forEach(i=>{ if (pantry.has(i)) have++; });
+      const fit = pantry.size ? Math.round((have/need.size)*100) : 0;
+      return {...r, _fit: fit};
     });
+
+    const sort = document.getElementById("sort").value;
+    list.sort((a,b)=>{
+      if (sort==="time") return a.time - b.time;
+      // relevance: pantry fit + simple title hit
+      const aR = a._fit + (q && a.title.toLowerCase().includes(q) ? 20 : 0);
+      const bR = b._fit + (q && b.title.toLowerCase().includes(q) ? 20 : 0);
+      return bR - aR;
+    });
+
+    renderList(list);
   }
 
   function renderList(list){
     $results.innerHTML = "";
     $count.textContent = list.length;
-    $favCount.textContent = favorites.size;
-    $histCount.textContent = history.length;
-
-    if (!list.length){
-      $empty.style.display = "block";
-      return;
-    }
-    $empty.style.display = "none";
-
+    $empty.style.display = list.length ? "none" : "block";
     list.forEach(r=>{
       const card = document.createElement("div");
-      card.className = "rf-recipe";
-      const dietLabel = r.diet.join(", ") || "—";
-      const favMark = favorites.has(r.id) ? "★" : "☆";
+      card.className = "recipe";
       card.innerHTML = `
-        <div class="rf-row" style="justify-content:space-between">
-          <h4>${r.title}</h4>
-          <span class="rf-fav" data-fav="${r.id}" title="Toggle favorite">${favMark}</span>
-        </div>
-        <div class="rf-meta">${r.course} • ${r.difficulty} • ${r.time} min • serves ${r.servings} • diet: ${dietLabel}</div>
-        <div class="rf-mini">Pantry fit: <strong>${r._score?.pantry||0}%</strong> • Health score: <strong>${r._score?.health||0}</strong></div>
-        <div>${r.tags.map(t=>`<span class="rf-tag">#${t}</span>`).join("")}</div>
-        <div class="rf-actions">
-          <button class="rf-btn primary" data-open="${r.id}">Open</button>
-          <button class="rf-btn" draggable="true" data-drag="${r.id}">Drag to plan</button>
+        <h4>${r.title}</h4>
+        <div class="meta">${r.course} • ${r.difficulty} • ${r.time} min • serves ${r.servings}</div>
+        <div class="mini">Pantry fit: <strong>${r._fit||0}%</strong></div>
+        <div>${r.tags.map(t=>`<span class="tag">#${t}</span>`).join("")}</div>
+        <div class="row">
+          <a class="btn primary" href="recipe.html?id=${r.id}">Open</a>
+          <button class="btn" data-add="${r.id}">Add to Plan</button>
         </div>
       `;
-      card.querySelector(`[data-open="${r.id}"]`).addEventListener("click", ()=> openRecipe(r.id));
-      card.querySelector(`[data-fav="${r.id}"]`).addEventListener("click", ()=>{
-        toggleFav(r.id);
-        renderList(list);
-        if (selected && selected.id===r.id) reflectFav();
+      card.querySelector(`[data-add="${r.id}"]`).addEventListener("click", ()=>{
+        // add to first slot with <2 items
+        const day = (["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].find(d=> (plan[d]||[]).length<2)) || "Mon";
+        plan[day] = plan[day] || [];
+        plan[day].push(r.id);
+        localStorage.setItem("rf_plan", JSON.stringify(plan));
+        alert(`Added to ${day}`);
       });
-      // drag
-      const dragBtn = card.querySelector(`[data-drag="${r.id}"]`);
-      dragBtn.addEventListener("dragstart", e=>{
-        e.dataTransfer.setData("text/recipe-id", r.id);
-        e.dataTransfer.effectAllowed = "copyMove";
-      });
-
       $results.appendChild(card);
     });
   }
 
-  function openRecipe(id){
-    selected = RECIPES.find(x=>x.id===id);
-    if (!selected) return;
-    // history
-    history = history.filter(x=>x!==id).slice(-24);
-    history.unshift(id);
-    localStorage.setItem("rf_hist", JSON.stringify(history));
-
-    $dTitle.textContent = selected.title;
-    $dMeta.textContent = `${selected.course} • ${selected.difficulty} • ${selected.time} min • serves ${selected.servings}`;
-    $dTags.textContent = selected.tags.map(x=>`#${x}`).join(" ");
-    $dServings.value = selected.servings;
-    updateNutritionAndIngredients();
-
-    $dSteps.innerHTML = "";
-    selected.steps.forEach(s=>{
-      const li = document.createElement("li");
-      li.textContent = s;
-      $dSteps.appendChild(li);
-    });
-
-    reflectFav();
-    $detail.style.display = "block";
-  }
-
-  function reflectFav(){
-    if (!selected) return;
-    $dFav.textContent = favorites.has(selected.id) ? "★" : "☆";
-    $dFav.title = favorites.has(selected.id) ? "Remove favorite" : "Add favorite";
-  }
-
-  function updateNutritionAndIngredients(){
-    if (!selected) return;
-    const servings = Math.max(1, parseInt($dServings.value||selected.servings,10));
-    const factor = servings / selected.servings;
-
-    // ingredients
-    const scaled = scaleIngredients(selected.ingredients, factor);
-    $dIngs.innerHTML = "";
-    scaled.forEach(ing=>{
-      const li = document.createElement("li");
-      li.textContent = `${ing.qty} ${normalizeUnit(ing.unit)} ${ing.item}`;
-      $dIngs.appendChild(li);
-    });
-
-    // nutrition
-    const n = nutritionForRecipe({...selected, ingredients: scaled}, servings);
-    $dNutri.textContent = `${n.kcal} kcal • P ${n.protein}g • C ${n.carbs}g • F ${n.fat}g`;
-  }
-
-  /* ===== Search & Score ===== */
-  function healthScore(recipe){
-    // naive: lower kcal & fat per serving + protein bonus
-    const n = nutritionForRecipe(recipe);
-    const base = 1000; // scale
-    const score = Math.max(0, 100
-      - (n.kcal/8)
-      - (n.fat*1.5)
-      + (n.protein*0.8));
-    return Math.round(score);
-  }
-
-  function runSearch(){
-    const terms = tokenizeQuery($q.value);
-    const mode = document.querySelector('#modeChips .rf-chip[data-active="true"]').dataset.key;
-    const diet = $diet.value;
-    const course = $course.value;
-    const diff = $diff.value;
-    const timeMax = parseInt($time.value||"0",10) || Infinity;
-    const maxIng = parseInt($maxIng.value||"0",10) || Infinity;
-    const exclude = new Set(($exclude.value||"").toLowerCase().split(",").map(s=>s.trim()).filter(Boolean));
-    const pantrySet = new Set(($pantry.value||"").toLowerCase().split(",").map(s=>s.trim()).filter(Boolean));
-    const minPantry = parseInt($minPan.value||"0",10) || 0;
-    const sort = $sort.value;
-
-    let list = RECIPES.filter(r=>{
-      if (diet && !r.diet.includes(diet)) return false;
-      if (course && r.course!==course) return false;
-      if (diff && r.difficulty!==diff) return false;
-      if (r.time > timeMax) return false;
-      if (r.ingredients.length > maxIng) return false;
-      if ([...exclude].some(x => r.ingredients.some(i => i.item.includes(x)))) return false;
-
-      // Query matching
-      if (terms.length){
-        const tokens = textTokensRecipe(r);
-        if (mode==="and"){
-          for (const t of terms){ if (!tokens.includes(t)) return false; }
-        } else if (mode==="or"){
-          let hit = false; for (const t of terms){ if (tokens.includes(t)) {hit=true; break;} }
-          if (!hit) return false;
-        } else { // fuzzy
-          let ok = true;
-          for (const t of terms){ if (!includesFuzzy(tokens, t)) {ok=false; break;} }
-          if (!ok) return false;
-        }
+  /* Meal plan */
+  function renderPlan(){
+    $planBox.innerHTML = "";
+    days.forEach(d=>{
+      const box = document.createElement("div");
+      box.className = "day";
+      box.innerHTML = `<h5>${d}</h5>`;
+      (plan[d]||[]).forEach(id=>{
+        const r = RECIPES.find(x=>x.id===id);
+        const pill = document.createElement("div");
+        pill.className="pill";
+        pill.innerHTML = `<span>🍽️</span><a href="recipe.html?id=${id}">${r.title}</a><button data-remove="${d}|${id}">✕</button>`;
+        box.appendChild(pill);
+      });
+      if (!plan[d] || !plan[d].length){
+        const small = document.createElement("div");
+        small.className="mini"; small.textContent="No recipes yet";
+        box.appendChild(small);
       }
-
-      // Pantry fit
-      const p = pantryScore(r, pantrySet);
-      if (p < minPantry) return false;
-      return true;
+      $planBox.appendChild(box);
     });
-
-    // scoring
-    list = list.map(r=>{
-      const rel = terms.length ? terms.reduce((acc,t)=>{
-        const text = textTokensRecipe(r).join(" ");
-        const count = (text.match(new RegExp("\\b"+t+"\\b","g"))||[]).length;
-        return acc + count;
-      },0) : 1;
-      const pantry = pantryScore(r, pantrySet);
-      const health = healthScore(r);
-      const quick = r.time;
-      return {...r, _score:{rel, pantry, health, quick}};
-    });
-
-    // sort
-    list.sort((a,b)=>{
-      if (sort==="pantry") return b._score.pantry - a._score.pantry || a.time - b.time;
-      if (sort==="time")   return a.time - b.time;
-      if (sort==="health") return b._score.health - a._score.health;
-      // relevance (combine rel + pantry boost)
-      const ar = a._score.rel + a._score.pantry/50 + a.tags.length/10;
-      const br = b._score.rel + b._score.pantry/50 + b.tags.length/10;
-      return br - ar;
-    });
-
-    currentList = list;
-    renderList(list);
   }
 
-  /* ===== Favorites, History, Plan ===== */
-  function toggleFav(id){
-    if (favorites.has(id)) favorites.delete(id); else favorites.add(id);
-    localStorage.setItem("rf_favs", JSON.stringify([...favorites]));
-  }
-
-  function persistPlan(){
+  document.getElementById("plan").addEventListener("click", (e)=>{
+    const key = e.target?.dataset?.remove;
+    if (!key) return;
+    const [day,id] = key.split("|");
+    plan[day] = (plan[day]||[]).filter(x=>x!==id);
     localStorage.setItem("rf_plan", JSON.stringify(plan));
-  }
+    renderPlan();
+  });
 
-  function showFavorites(){
-    const favs = RECIPES.filter(r=>favorites.has(r.id))
-      .map(r=>({...r,_score:{pantry:0,health:healthScore(r)}}));
-    renderList(favs);
-  }
+  /* Tabs */
+  const $tabSearch = document.getElementById("tab-search");
+  const $tabPlan = document.getElementById("tab-plan");
+  function showSearch(){ document.getElementById("view-search").hidden=false; document.getElementById("view-plan").hidden=true; $tabSearch.setAttribute("aria-selected","true"); $tabPlan.setAttribute("aria-selected","false"); }
+  function showPlan(){ document.getElementById("view-search").hidden=true; document.getElementById("view-plan").hidden=false; $tabSearch.setAttribute("aria-selected","false"); $tabPlan.setAttribute("aria-selected","true"); renderPlan(); }
+  $tabSearch.addEventListener("click", showSearch);
+  $tabPlan.addEventListener("click", showPlan);
+  document.getElementById("goPlan").addEventListener("click", showPlan);
 
-  function showAll(){
-    renderList(RECIPES.map(r=>({...r,_score:{pantry:0,health:healthScore(r)}})));
-  }
-
-  function buildShoppingList(){
-    // aggregate across plan
+  /* Buttons */
+  document.getElementById("search").addEventListener("click", runSearch);
+  document.getElementById("showAll").addEventListener("click", ()=> renderList(RECIPES));
+  document.getElementById("shopList").addEventListener("click", ()=>{
     const needed = {};
     for (const d of days){
-      for (const id of plan[d]){
-        const r = RECIPES.find(x=>x.id===id);
-        if (!r) continue;
+      for (const id of (plan[d]||[])){
+        const r = RECIPES.find(x=>x.id===id); if (!r) continue;
         r.ingredients.forEach(ing=>{
-          const key = ing.item + "|" + normalizeUnit(ing.unit);
-          if (!needed[key]) needed[key] = { item: ing.item, unit: normalizeUnit(ing.unit), qty: 0 };
+          const key = ing.item+"|"+(ing.unit||"g").toLowerCase();
+          if (!needed[key]) needed[key] = { item:ing.item, unit:(ing.unit||"g").toLowerCase(), qty:0 };
           needed[key].qty += ing.qty;
         });
       }
     }
-    const items = Object.values(needed).sort((a,b)=> a.item.localeCompare(b.item));
-    if (!items.length){ toast("Your plan is empty."); return; }
-
-    // Show as prompt-less copy (detail panel area)
-    const lines = items.map(i=> `${round1(i.qty)} ${i.unit} ${i.item}`);
-    navigator.clipboard?.writeText(lines.join("\n")).catch(()=>{});
-    toast("Shopping list copied to clipboard!");
-
-    // Also show under results temporarily
-    $results.innerHTML = `
-      <div class="rf-card">
-        <h3>Shopping List</h3>
-        <ul class="rf-list">${lines.map(l=>`<li>${l}</li>`).join("")}</ul>
-        <p class="rf-mini">List aggregated across your current meal plan.</p>
-      </div>`;
-    $count.textContent = items.length;
-    $empty.style.display="none";
-  }
-
-  /* ===== Events ===== */
-  document.getElementById("search").addEventListener("click", runSearch);
-  document.getElementById("feeling").addEventListener("click", ()=>{
-    const r = RECIPES[Math.floor(Math.random()*RECIPES.length)];
-    renderList([({...r, _score:{pantry:0,health:healthScore(r)}})]);
-    openRecipe(r.id);
+    const lines = Object.values(needed).sort((a,b)=>a.item.localeCompare(b.item)).map(i=>`${Math.round(i.qty*10)/10} ${i.unit} ${i.item}`);
+    if (!lines.length){ alert("Plan is empty."); return; }
+    navigator.clipboard?.writeText(lines.join("\n"));
+    alert("Shopping list copied to clipboard.");
   });
-  document.getElementById("showFavs").addEventListener("click", showFavorites);
-  document.getElementById("showAll").addEventListener("click", showAll);
-  document.getElementById("shopList").addEventListener("click", buildShoppingList);
   document.getElementById("clearPlan").addEventListener("click", ()=>{
     days.forEach(d=> plan[d]=[]);
-    persistPlan(); renderPlan(); toast("Cleared plan");
-  });
-
-  document.getElementById("dServings").addEventListener("input", updateNutritionAndIngredients);
-  document.getElementById("copyList").addEventListener("click", ()=>{
-    if (!selected) return;
-    const servings = Math.max(1, parseInt($dServings.value||selected.servings,10));
-    const factor = servings / selected.servings;
-    const scaled = scaleIngredients(selected.ingredients, factor)
-      .map(i=> `${i.qty} ${normalizeUnit(i.unit)} ${i.item}`).join("\n");
-    navigator.clipboard?.writeText(scaled).then(()=> toast("Ingredients copied"));
-  });
-  document.getElementById("addToPlan").addEventListener("click", ()=>{
-    if (!selected) return toast("Open a recipe first.");
-    // Default add to the first day with <2 items
-    const target = days.find(d=> plan[d].length < 2) || "Mon";
-    plan[target].push(selected.id);
-    persistPlan(); renderPlan();
-    toast(`Added to ${target}`);
-  });
-  document.getElementById("dFav").addEventListener("click", ()=>{
-    if (!selected) return;
-    toggleFav(selected.id); reflectFav();
-    // also update counts
-    document.getElementById("favCount").textContent = favorites.size;
-  });
-
-  // chips
-  document.getElementById("modeChips").addEventListener("click", (e)=>{
-    const chip = e.target.closest(".rf-chip");
-    if (!chip) return;
-    [...document.querySelectorAll("#modeChips .rf-chip")].forEach(c=> c.dataset.active="false");
-    chip.dataset.active="true";
+    localStorage.setItem("rf_plan", JSON.stringify(plan));
+    renderPlan();
   });
 
   // Init
+  renderList(RECIPES);
   renderPlan();
-  showAll(); // initial
   </script>
 </body>
 </html>
