@@ -1,75 +1,124 @@
 <!doctype html>
-<script src="./api.js?v=2"></script>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Financials — Ratios</title>
-<link rel="stylesheet" href="../style.css" />
-<style>
-  .wrap{max-width:1000px;margin:90px auto 40px;padding:0 20px}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-  .card{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px}
-  .muted{color:var(--muted)}
-  .big{font-size:28px;font-weight:700;margin:6px 0}
-  .ok{color:#38d39f}.warn{color:#ffc74d}.bad{color:#ff6b6b}
-</style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Ratios</title>
+  <link rel="stylesheet" href="../style.css"/>
+  <style>
+    .wrap{max-width:1000px;margin:90px auto 40px;padding:0 20px}
+    .tabs{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px}
+    .tabs a{padding:8px 12px;border:1px solid rgba(255,255,255,.15);border-radius:10px}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:14px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:right}
+    th:first-child,td:first-child{text-align:left}
+    .muted{color:var(--muted)}
+    .home-icon{position:fixed;top:14px;left:16px;color:var(--fg);text-decoration:none}
+  </style>
 </head>
 <body class="dark">
-<header class="site-wrap topbar" style="position:fixed;left:0;right:0;top:0">
-  <a class="home" href="../index.html">⌂</a>
-  <div class="links">
-    <a href="./index.html">Overview</a>
-    <a href="./statements.html">Statements</a>
-    <a href="./ratios.html" style="border-bottom:1px solid currentColor">Ratios</a>
-    <a href="./valuation.html">Valuation</a>
-  </div>
-</header>
+  <a href="../index.html" class="home-icon" title="Back to Home">⌂</a>
 
-<main class="wrap">
-  <h1 id="title">Ratios</h1>
-  <div class="grid" id="cards">Loading…</div>
-</main>
+  <main class="wrap">
+    <h1 id="title">Loading…</h1>
+    <div class="tabs">
+      <a id="tab-statements" href="#">Statements</a>
+      <a id="tab-ratios" href="#">Ratios</a>
+      <a id="tab-overview" href="./index.html">Overview</a>
+    </div>
 
-<script src="./api.js"></script>
-<script>
-const tk = (new URLSearchParams(location.search).get('t')||'AAPL').toUpperCase();
-document.getElementById('title').textContent = `${tk} — Ratios`;
+    <p id="warn" class="muted"></p>
 
-function tone(v, goodHigh=true){ if (v==null) return ''; if (goodHigh) return v>0.25?'ok':v>0.15?'warn':'bad'; else return v<2.0?'ok':v<3.0?'warn':'bad'; }
+    <section class="card">
+      <h3>Key Ratios (Annual)</h3>
+      <div id="tbl"></div>
+    </section>
+  </main>
 
-async function load() {
-  try {
-    const [is, bs, cf, metrics] = await Promise.all([
-      __FMP.income(tk,2), __FMP.balance(tk,2), __FMP.cashflow(tk,2), __FMP.keyMetrics(tk,2)
-    ]);
-    const i0=is?.[0], b0=bs?.[0], c0=cf?.[0], i1=is?.[1], b1=bs?.[1];
-    const rev=i0?.revenue, op=i0?.operatingIncome, net=i0?.netIncome;
-    const assets0=b0?.totalAssets, assets1=b1?.totalAssets;
-    const equity0=b0?.totalStockholdersEquity, equity1=b1?.totalStockholdersEquity;
-    const cfo=c0?.netCashProvidedByOperatingActivities, capex=c0?.capitalExpenditure;
-    const at = rev && assets0 && assets1 ? rev/((assets0+assets1)/2) : null;
-    const roe = net && equity0 && equity1 ? net/((equity0+equity1)/2) : null;
-    const lev = assets0 && equity0 ? assets0/Math.max(equity0,0.0001) : null;
-    const cards = [
-      {t:"Operating Margin", v: rev? (op/rev):null, fmt:__FMP.pct, cls:v=>tone(v)},
-      {t:"Net Margin", v: rev? (net/rev):null, fmt:__FMP.pct, cls:v=>tone(v)},
-      {t:"FCF Margin", v: rev? ((c0?.netCashProvidedByOperatingActivities+(capex||0))/rev):null, fmt:__FMP.pct, cls:v=>tone(v)},
-      {t:"Asset Turnover", v: at, fmt:v=>v?.toFixed(2)+'×', cls:v=>tone(v)},
-      {t:"ROE", v: roe, fmt:__FMP.pct, cls:v=>tone(v)},
-      {t:"Leverage (A/E)", v: lev, fmt:v=>v?.toFixed(2)+'×', cls:v=>tone(v,false)}
-    ];
-    document.getElementById('cards').innerHTML = cards.map(c=>`
-      <div class="card">
-        <p class="muted">${c.t}</p>
-        <div class="big ${c.cls(c.v)}">${c.v==null?'—':c.fmt(c.v)}</div>
-        <p class="muted">FY ${__FMP.ylab(i0?.date)}</p>
-      </div>`).join('');
-  } catch(e){
-    document.getElementById('cards').innerHTML = `<p class="muted">Could not load ${tk}. Check API key/ticker.</p>`;
-  }
-}
-load();
-</script>
+  <script src="./api.js?v=3"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const T = (params.get("t") || "").toUpperCase().trim();
+
+    document.getElementById("tab-statements").href = `./statements.html?t=${encodeURIComponent(T)}`;
+    document.getElementById("tab-ratios").href = `./ratios.html?t=${encodeURIComponent(T)}`;
+
+    const $title = document.getElementById("title");
+    const $warn = document.getElementById("warn");
+    const $tbl = document.getElementById("tbl");
+
+    function table(cols, rows){
+      const thead = `<thead><tr><th>Metric</th>${cols.map(c=>`<th>${c}</th>`).join("")}</tr></thead>`;
+      const body = rows.map(([label, vals]) =>
+        `<tr><td>${label}</td>${vals.map(v=>`<td>${v}</td>`).join("")}</tr>`).join("");
+      return `<table>${thead}<tbody>${body}</tbody></table>`;
+    }
+
+    async function render(){
+      if (!T){ $title.textContent = "Missing ticker"; return; }
+      if (window.__FMP?.needKey()){
+        $warn.textContent = "⚠️ Add your API key on the Overview page to load data.";
+        $title.textContent = T;
+        return;
+      }
+      try {
+        const [p, met, inc, bal] = await Promise.all([
+          __FMP.profile(T),
+          __FMP.keyMetrics(T, 4),
+          __FMP.income(T, 4),
+          __FMP.balance(T, 4)
+        ]);
+        $title.textContent = `${T} — ${p?.companyName ?? ""}`;
+        $warn.textContent = "";
+
+        const years = (inc||[]).map(r=>__FMP.y(r.date));
+
+        // We’ll compute/collect a few ourselves and use keyMetrics where handy.
+        const netMargins = inc.map(r => (r.revenue && r.netIncome) ? ((r.netIncome/r.revenue)*100).toFixed(1)+'%' : '—');
+        const opMargins  = inc.map(r => (r.revenue && r.operatingIncome) ? ((r.operatingIncome/r.revenue)*100).toFixed(1)+'%' : '—');
+        const currentRat = bal.map(r => (r.totalCurrentAssets && r.totalCurrentLiabilities)
+                                ? (r.totalCurrentAssets / r.totalCurrentLiabilities).toFixed(2) : '—');
+
+        function pick(key, fmt=(v)=>v){
+          // map metrics by date year -> value
+          const byYear = {};
+          (met||[]).forEach(m => { byYear[__FMP.y(m.date)] = m[key]; });
+          return years.map(yr => {
+            const v = byYear[yr];
+            if (v == null) return '—';
+            return fmt(v);
+          });
+        }
+
+        const roe  = pick("roe", v => (v*100).toFixed(1)+'%');
+        const roa  = pick("roa", v => (v*100).toFixed(1)+'%');
+        const de   = pick("debtToEquity", v => v.toFixed(2));
+        const at   = pick("assetTurnover", v => v.toFixed(2));
+        const pe   = pick("peRatio", v => v.toFixed(1));
+        const ps   = pick("priceToSalesRatio", v => v.toFixed(1));
+
+        const rows = [
+          ["Net Margin",   netMargins],
+          ["Operating Margin", opMargins],
+          ["Current Ratio", currentRat],
+          ["ROE", roe],
+          ["ROA", roa],
+          ["Debt / Equity", de],
+          ["Asset Turnover", at],
+          ["P/E", pe],
+          ["P/S", ps]
+        ];
+
+        $tbl.innerHTML = table(years, rows);
+
+      } catch (e) {
+        console.error(e);
+        $title.textContent = T;
+        $warn.textContent = `Could not load ${T}. Check your API key or ticker.`;
+      }
+    }
+    render();
+  </script>
 </body>
 </html>
