@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Financials — Valuation</title>
+<link rel="stylesheet" href="../style.css" />
+<style>
+  .wrap{max-width:900px;margin:90px auto 40px;padding:0 20px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:860px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px}
+  .row{display:grid;grid-template-columns:150px 1fr;gap:8px;align-items:center;margin:6px 0}
+  input{padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:transparent;color:var(--fg)}
+  .muted{color:var(--muted)}
+  .big{font-size:28px;font-weight:700;margin:6px 0}
+  .btn{padding:10px 14px;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+</style>
+</head>
+<body class="dark">
+<header class="site-wrap topbar" style="position:fixed;left:0;right:0;top:0">
+  <a class="home" href="../index.html">⌂</a>
+  <div class="links">
+    <a href="./index.html">Overview</a>
+    <a href="./statements.html">Statements</a>
+    <a href="./ratios.html">Ratios</a>
+    <a href="./valuation.html" style="border-bottom:1px solid currentColor">Valuation</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 id="title">Valuation</h1>
+  <p class="muted">Quick 5-year DCF using latest FCF, growth/decay, discount rate, and terminal growth. Mock data, adjustable.</p>
+
+  <div class="grid">
+    <div class="card">
+      <div class="row"><label>Ticker</label><input id="t" value="AAPL"></div>
+      <div class="row"><label>FCF (latest, $B)</label><input id="fcf" type="number" step="0.1"></div>
+      <div class="row"><label>Growth Y1–Y2 (%)</label><input id="g1" type="number" value="8"></div>
+      <div class="row"><label>Growth Y3–Y5 (%)</label><input id="g2" type="number" value="5"></div>
+      <div class="row"><label>Discount Rate (%)</label><input id="r" type="number" value="10"></div>
+      <div class="row"><label>Terminal Growth (%)</label><input id="gt" type="number" value="3"></div>
+      <div class="row"><label>Shares Out (B)</label><input id="sh" type="number" step="0.01"></div>
+      <div class="row"><label>Net Cash (B)</label><input id="nc" type="number" value="0"></div>
+      <button class="btn" id="calc">Recalculate</button>
+    </div>
+
+    <div class="card" id="out">
+      <h3>Result</h3>
+      <div class="big" id="ps">$0.00 / share</div>
+      <p class="muted" id="explain"></p>
+    </div>
+  </div>
+</main>
+
+<script>
+const DB={
+  AAPL:{ name:"Apple Inc.", fcf:110.5+(-10.5), shares:15.6, netcash:-90 },
+  MSFT:{ name:"Microsoft Corp.", fcf:121.0+(-22.0), shares:7.45, netcash:60 }
+};
+const p = new URLSearchParams(location.search);
+const tk = (p.get('t')||'AAPL').toUpperCase();
+const d=DB[tk]||DB.AAPL;
+document.getElementById('title').textContent = `${tk} — ${ (DB[tk]?.name||'') }`;
+
+const $t = document.getElementById('t');
+const $fcf=document.getElementById('fcf');
+const $g1=document.getElementById('g1');
+const $g2=document.getElementById('g2');
+const $r=document.getElementById('r');
+const $gt=document.getElementById('gt');
+const $sh=document.getElementById('sh');
+const $nc=document.getElementById('nc');
+const $ps=document.getElementById('ps');
+const $ex=document.getElementById('explain');
+
+$t.value=tk; $fcf.value=(d.fcf||20).toFixed(1); $sh.value=d.shares||10; $nc.value=d.netcash||0;
+
+function calc(){
+  const f0=+$fcf.value; const g1=+$g1.value/100; const g2=+$g2.value/100; const r=+$r.value/100; const gt=+$gt.value/100;
+  const sh=+$sh.value; const nc=+$nc.value;
+  const f=[ f0*(1+g1),
+            f0*Math.pow(1+g1,2),
+            f0*Math.pow(1+g1,2)*(1+g2),
+            f0*Math.pow(1+g1,2)*Math.pow(1+g2,2),
+            f0*Math.pow(1+g1,2)*Math.pow(1+g2,3) ];
+  const pv = f.map((v,i)=> v/Math.pow(1+r, i+1) ).reduce((a,b)=>a+b,0);
+  const tv = f[4]*(1+gt)/(r-gt);
+  const pvTv = tv/Math.pow(1+r,5);
+  const ev = pv + pvTv;
+  const eq = ev + nc;
+  const per = eq/sh;
+  $ps.textContent = `$${per.toFixed(2)} / share`;
+  $ex.textContent = `PV(FCF 1–5): $${pv.toFixed(1)}B • PV(Terminal): $${pvTv.toFixed(1)}B • Net Cash: ${nc>=0?'+':''}$${nc.toFixed(1)}B • Shares: ${sh.toFixed(2)}B`;
+}
+document.getElementById('calc').onclick = calc;
+calc();
+</script>
+</body>
+</html>
