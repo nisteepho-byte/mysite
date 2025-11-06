@@ -50,55 +50,70 @@
 </main>
 
 <!-- Data layer -->
-<script src="./api.js"></script>
+<script src="./api.js?v=2"></script>
 <script>
 const $t = document.getElementById('ticker');
 const $open = document.getElementById('open');
 const $snap = document.getElementById('snap');
 const $warn = document.getElementById('keyWarn');
+const $keyBox = document.getElementById('keyBox');
+const $keyInput = document.getElementById('keyInput');
+const $saveKey = document.getElementById('saveKey');
 
-if (__FMP.needKey()) {
-  $warn.textContent = "⚠️ Add your FMP API key in financials/api.js to enable all tickers.";
+function showKeyUIIfNeeded(){
+  if (window.__FMP?.needKey()) {
+    $warn.textContent = "⚠️ Add your FMP API key to enable live data.";
+    $keyBox.style.display = 'flex';
+  } else {
+    $warn.textContent = "";
+    $keyBox.style.display = 'none';
+  }
 }
+showKeyUIIfNeeded();
 
-function card(tk, p, q, latestIS) {
-  const rev = latestIS?.revenue ?? 0;
-  const net = latestIS?.netIncome ?? 0;
-  const margin = rev ? (net/rev*100).toFixed(1) : "—";
-  return `
-    <a class="card" href="./statements.html?t=${encodeURIComponent(tk)}">
-      <h3>${tk.toUpperCase()} — ${p?.companyName ?? "Unknown"}</h3>
-      <p class="muted">${p?.sector ?? ""} ${p?.industry ? "• " + p.industry : ""}</p>
-      <div class="row" style="margin-top:8px">
-        <span class="pill">Price: <strong>${q?.price ?? "—"}</strong></span>
-        <span class="pill">MktCap: <strong>${q?.marketCap ? __FMP.fmtB(q.marketCap) : "—"}</strong></span>
-        <span class="pill">Rev: <strong>${rev ? __FMP.fmtB(rev) : "—"}</strong></span>
-        <span class="pill">Net Margin: <strong>${margin === "—" ? "—" : margin + "%"}</strong></span>
-      </div>
-    </a>`;
+$saveKey.addEventListener('click', ()=>{
+  const ok = window.__FMP?.setFmpKey($keyInput.value.trim());
+  if (ok) { $keyInput.value = ""; showKeyUIIfNeeded(); location.reload(); }
+});
+
+function go(){
+  const tk = ($t.value || '').trim();
+  if (!tk) return;
+  location.href = `./statements.html?t=${encodeURIComponent(tk)}`;
 }
+$open.addEventListener('click', go);
+$t.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') go(); });
 
 async function renderExamples() {
-  const defaults = ["AAPL","MSFT","NVDA","TSLA"];
+  if (window.__FMP?.needKey()) return; // skip until key present
+  const list = ["AAPL","MSFT","NVDA","TSLA"];
   $snap.innerHTML = "";
-  for (const tk of defaults) {
+  for (const tk of list) {
     try {
       const [p, q, is] = await Promise.all([
         __FMP.profile(tk), __FMP.quote(tk), __FMP.income(tk,1)
       ]);
-      $snap.insertAdjacentHTML("beforeend", card(tk, p, q, is?.[0]));
-    } catch (e) {
-      // fail silently on examples if no key
-    }
+      const rev = is?.[0]?.revenue ?? 0;
+      const net = is?.[0]?.netIncome ?? 0;
+      const margin = rev ? (net/rev*100).toFixed(1) : "—";
+      $snap.insertAdjacentHTML("beforeend", `
+        <a class="card" href="./statements.html?t=${encodeURIComponent(tk)}">
+          <h3>${tk} — ${p?.companyName ?? "—"}</h3>
+          <p class="muted">${p?.sector ?? ""} ${p?.industry ? "• " + p.industry : ""}</p>
+          <div class="row" style="margin-top:8px">
+            <span class="pill">Price: <strong>${q?.price ?? "—"}</strong></span>
+            <span class="pill">MktCap: <strong>${q?.marketCap ? __FMP.fmtB(q.marketCap) : "—"}</strong></span>
+            <span class="pill">Rev: <strong>${rev ? __FMP.fmtB(rev) : "—"}</strong></span>
+            <span class="pill">Net Margin: <strong>${margin === "—" ? "—" : margin + "%"}</strong></span>
+          </div>
+        </a>
+      `);
+    } catch(e){ /* ignore sample errors */ }
   }
 }
-$open.onclick = ()=>{
-  const tk = $t.value.trim();
-  if (!tk) return;
-  location.href = `./statements.html?t=${encodeURIComponent(tk)}`;
-};
 renderExamples();
 </script>
+
 </body>
 </html>
 
