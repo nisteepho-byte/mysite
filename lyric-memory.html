@@ -1,98 +1,529 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lyric Memory Game</title>
-<link rel="stylesheet" href="style.css" />
-<style>
-.page { max-width: 820px; margin: 100px auto 40px; padding: 0 20px; }
-.quiz { display: grid; gap: 16px; }
-.q {
-  background: var(--card); border: 1px solid rgba(255,255,255,.08);
-  border-radius: 14px; padding: 16px;
-}
-.q h3{ margin:0 0 10px; font-size:18px; }
-.opts { display: grid; grid-template-columns: repeat(2, minmax(140px,1fr)); gap: 10px; margin-top: 10px; }
-.opts label {
-  display: block; padding: 10px 12px; border:1px solid rgba(255,255,255,.12);
-  border-radius: 10px; cursor: pointer; background: transparent;
-}
-input[type="radio"]{ position:absolute; opacity:0; pointer-events:none; }
-.feedback { margin-top: 8px; font-weight: 600; display:none; }
-.feedback.ok { color: #38d39f; }
-.feedback.no { color: #ff6b6b; }
-input.correct:checked ~ .feedback.ok { display:block; }
-input.wrong:checked ~ .feedback.no { display:block; }
-details { margin-top: 8px; }
-details summary { cursor: pointer; color: var(--accent); }
-footer.page-foot { color: var(--muted); margin-top: 18px; font-size: 14px; }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lyric Memory — Nick Isteepho</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Page-scoped tweaks (kept tiny; main styles in style.css section below) */
+    .lm-wrap{ max-width:1000px; margin:90px auto 40px; padding:0 20px; }
+    .lm-grid{ display:grid; grid-template-columns: 320px 1fr; gap:16px; }
+    @media (max-width: 980px){ .lm-grid{ grid-template-columns: 1fr; } }
+    .lm-card{ background:var(--card); border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:14px; }
+    .lm-controls .row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .lm-controls select, .lm-controls input[type="number"]{
+      padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.14); background:transparent; color:var(--fg);
+    }
+    body:not(.dark) .lm-controls select, body:not(.dark) .lm-controls input[type="number"]{ border-color:#e6e7ef; color:#111; }
+    .lm-btn{ padding:10px 14px; border-radius:10px; border:1px solid var(--accent); background:transparent; color:var(--fg); cursor:pointer; }
+    .lm-btn.primary{ background:var(--accent); color:white; border-color:var(--accent); }
+    .lm-statbar{ display:flex; gap:12px; flex-wrap:wrap; color:var(--muted); font-size:14px; }
+    .lm-badge{ background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); padding:6px 10px; border-radius:999px; }
+    .lm-prog{ height:8px; border-radius:10px; background:rgba(255,255,255,.08); overflow:hidden; }
+    .lm-prog > span{ display:block; height:100%; width:0%; background:var(--accent); transition: width .15s linear; }
+    .lm-lyric{ min-height:92px; font-size:20px; line-height:1.6; }
+    .lm-ghost{ color:var(--muted); }
+    .lm-inputs{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .lm-inputs input{
+      min-width:120px; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.18);
+      background:transparent; color:var(--fg); font-size:16px;
+    }
+    body:not(.dark) .lm-inputs input{ border-color:#e2e6ef; color:#111; }
+    .lm-hints{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .lm-msg{ margin-top:10px; font-size:14px; color:var(--muted); }
+    .lm-good{ color:#38d39f; } .lm-bad{ color:#ff6b6b; }
+    .lm-edit textarea{
+      width:100%; min-height:160px; border:1px solid rgba(255,255,255,.18); border-radius:12px; padding:10px;
+      background:transparent; color:var(--fg); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    body:not(.dark) .lm-edit textarea{ border-color:#e2e6ef; color:#111; }
+    .lm-mini{ font-size:12px; color:var(--muted); }
+  </style>
 </head>
 <body class="dark">
-  <main class="page">
-    <h1>Lyric Memory Game</h1>
-    <p class="tag">Guess which lyric line is <em>real</em> and which is made-up.</p>
-
-    <div class="quiz">
-
-      <!-- Question 1 -->
-      <div class="q">
-        <h3>1) “i know it’s logical, but i can’t let go” — Olivia Rodrigo, <em>logical</em></h3>
-        <div class="opts">
-          <label>
-            <input class="correct" type="radio" name="q1" />
-            Real
-          </label>
-          <label>
-            <input class="wrong" type="radio" name="q1" />
-            Made-up
-          </label>
-        </div>
-        <div class="feedback ok">Correct!</div>
-        <div class="feedback no">Try again.</div>
-        <details><summary>Why?</summary> This line (or close paraphrase) appears in the song’s hook/theme.</details>
-      </div>
-
-      <!-- Question 2 -->
-      <div class="q">
-        <h3>2) “girl, so confusing—love is an algorithm i keep misusing” — Charli XCX, <em>Girl, so confusing</em></h3>
-        <div class="opts">
-          <label>
-            <input class="wrong" type="radio" name="q2" />
-            Real
-          </label>
-          <label>
-            <input class="correct" type="radio" name="q2" />
-            Made-up
-          </label>
-        </div>
-        <div class="feedback ok">Correct!</div>
-        <div class="feedback no">Try again.</div>
-        <details><summary>Why?</summary> Fun line, but “algorithm” isn’t in the original lyric.</details>
-      </div>
-
-      <!-- Question 3 -->
-      <div class="q">
-        <h3>3) “now the party don’t start till i walk in” — Kesha, <em>TiK ToK</em> (not <em>Take It Off</em>)</h3>
-        <div class="opts">
-          <label>
-            <input class="wrong" type="radio" name="q3" />
-            From “Take It Off”
-          </label>
-          <label>
-            <input class="correct" type="radio" name="q3" />
-            From another song
-          </label>
-        </div>
-        <div class="feedback ok">Correct!</div>
-        <div class="feedback no">Try again.</div>
-        <details><summary>Why?</summary> It’s a Kesha lyric, but it’s from <em>TiK ToK</em>, not <em>Take It Off</em>.</details>
-      </div>
-
+  <header class="wrap culinary-header">
+    <a href="index.html" class="home-icon" title="Back to Home">⌂</a>
+    <div class="header-text">
+      <h1>Lyric Memory</h1>
+      <p class="sub">Memorize the line, then fill the blanks. Modes, difficulty, lives, hints, and a timer. Paste your own lyrics, too.</p>
     </div>
+  </header>
 
-    <footer class="page-foot">CSS-only: radio inputs + sibling selectors reveal feedback.</footer>
+  <main class="lm-wrap">
+    <div class="lm-grid">
+      <!-- LEFT: Controls -->
+      <aside class="lm-card lm-controls">
+        <h3>Game Setup</h3>
+        <div class="row">
+          <label>Mode</label>
+          <select id="mode">
+            <option value="classic">Classic</option>
+            <option value="endless">Endless Streak</option>
+            <option value="speed">Speed Round</option>
+          </select>
+        </div>
+        <div class="row">
+          <label>Difficulty</label>
+          <select id="difficulty">
+            <option value="easy">Easy — 1–2 blanks</option>
+            <option value="medium" selected>Medium — 2–3 blanks</option>
+            <option value="hard">Hard — 3–5 blanks</option>
+          </select>
+        </div>
+        <div class="row">
+          <label>Memorize (sec)</label>
+          <input id="memorize" type="number" min="2" max="10" value="5" />
+        </div>
+        <div class="row">
+          <label>Rounds</label>
+          <input id="rounds" type="number" min="3" max="20" value="8" />
+          <span class="lm-mini">(ignored in Endless)</span>
+        </div>
+        <div class="row">
+          <button id="start" class="lm-btn primary">Start</button>
+          <button id="reset" class="lm-btn">Reset</button>
+        </div>
+
+        <hr style="opacity:.2; border:none; border-top:1px solid rgba(255,255,255,.12); margin:14px 0">
+
+        <h3>Lyric List</h3>
+        <p class="lm-mini">Use public-domain or your own lyrics. One line per row, optional <code>|| Title — Artist</code>.</p>
+        <div class="lm-edit">
+          <textarea id="lyricsBox"></textarea>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button id="loadDefault" class="lm-btn">Load Sample (public domain)</button>
+          <button id="saveLyrics" class="lm-btn">Use These Lines</button>
+        </div>
+        <p class="lm-mini">We avoid shipping copyrighted lyrics. Paste your own lines to play with modern songs.</p>
+      </aside>
+
+      <!-- RIGHT: Game -->
+      <section class="lm-card">
+        <div class="lm-statbar">
+          <span class="lm-badge">Score: <strong id="score">0</strong></span>
+          <span class="lm-badge">Streak: <strong id="streak">0</strong></span>
+          <span class="lm-badge">Lives: <strong id="lives">3</strong></span>
+          <span class="lm-badge">Round: <strong id="round">0</strong></span>
+          <span class="lm-badge">Time: <strong id="time">0</strong>s</span>
+        </div>
+
+        <div style="margin:10px 0 8px" class="lm-prog"><span id="progress"></span></div>
+
+        <h3 id="meta" class="lm-ghost">Choose Start to begin.</h3>
+        <div id="lyric" class="lm-lyric lm-ghost"></div>
+
+        <div id="inputs" class="lm-inputs" hidden></div>
+
+        <div class="lm-hints">
+          <button id="hintLetter" class="lm-btn" disabled>Hint: First Letter</button>
+          <button id="hintWord" class="lm-btn" disabled>Hint: Reveal Word</button>
+          <button id="submit" class="lm-btn primary" disabled>Submit</button>
+          <button id="next" class="lm-btn" disabled>Next ▷</button>
+        </div>
+
+        <div id="msg" class="lm-msg"></div>
+
+        <details style="margin-top:10px">
+          <summary>How scoring works</summary>
+          <ul class="tight">
+            <li>Correct answer: +100 base, minus time penalty.</li>
+            <li>Streak bonus: +10 × current streak.</li>
+            <li>Hints: −15 (letter), −30 (word) each use.</li>
+            <li>Wrong: lose a life. Endless ends at 0 lives.</li>
+          </ul>
+        </details>
+      </section>
+    </div>
   </main>
+
+  <script>
+  // ---------- Data & Helpers ----------
+  const sampleLines = [
+    // Public domain samples
+    "Amazing grace how sweet the sound || Amazing Grace — Traditional",
+    "Twinkle twinkle little star how I wonder what you are || Traditional",
+    "When the saints go marching in I want to be in that number || Traditional",
+    "Home home on the range where the deer and the antelope play || Traditional",
+    "She'll be coming round the mountain when she comes || Traditional",
+    "Shenandoah I long to see you away you rolling river || Traditional"
+  ];
+
+  function tokenize(line){
+    // returns { words: [ {raw, clean} ], meta }
+    let meta = "";
+    let main = line;
+    if (line.includes("||")){
+      const [l, m] = line.split("||");
+      main = l.trim();
+      meta = m.trim();
+    }
+    const rawWords = main.split(/\s+/).filter(Boolean);
+    const words = rawWords.map(w => {
+      const clean = w.toLowerCase().replace(/[^a-z0-9']/g, "");
+      return { raw: w, clean };
+    });
+    return { words, meta };
+  }
+
+  function chooseBlanks(words, difficulty){
+    // difficulty → how many blanks based on length
+    const len = words.length;
+    let min=1, max=2;
+    if (difficulty==="medium"){ min=2; max=3; }
+    if (difficulty==="hard"){ min=3; max=5; }
+    const count = Math.min(len>4 ? Math.floor(Math.random()*(max-min+1))+min : 1, Math.max(1, Math.floor(len/3)));
+    // avoid blanking the very first and very last consistently; spread picks
+    const idxPool = Array.from(words.keys()).filter(i => words[i].clean.length>0);
+    const picks = new Set();
+    let guard = 0;
+    while(picks.size < count && guard < 200){
+      guard++;
+      const i = idxPool[Math.floor(Math.random()*idxPool.length)];
+      if (i===0 || i===len-1) continue;
+      // avoid clustering: skip neighbors if already picked
+      if (picks.has(i-1) || picks.has(i+1)) continue;
+      picks.add(i);
+    }
+    if (picks.size===0) picks.add(Math.min(2, len-1));
+    return [...picks].sort((a,b)=>a-b);
+  }
+
+  function maskToHTML(words, blanks){
+    const html = words.map((w, i) => blanks.includes(i)
+      ? `<span data-i="${i}" class="blank" style="display:inline-block; min-width:56px; border-bottom:2px solid var(--accent); text-align:center">&nbsp;</span>`
+      : `<span>${w.raw}</span>`
+    ).join(" ");
+    return html;
+  }
+
+  function createInputs(words, blanks){
+    const frag = document.createDocumentFragment();
+    blanks.forEach(i=>{
+      const inp = document.createElement("input");
+      inp.type="text";
+      inp.placeholder = "word";
+      inp.dataset.i = String(i);
+      frag.appendChild(inp);
+    });
+    return frag;
+  }
+
+  function normalize(s){ return (s||"").toLowerCase().replace(/[^a-z0-9']/g,""); }
+
+  // ---------- State ----------
+  let ALL_LINES = [];
+  let mode = "classic";
+  let difficulty = "medium";
+  let memorizeSec = 5;
+  let totalRounds = 8;
+
+  let round = 0;
+  let score = 0;
+  let streak = 0;
+  let lives = 3;
+  let timeLeft = 0;
+  let timerId = null;
+  let memTimerId = null;
+
+  let current = null; // { words, meta, blanks, answers:[], startTs }
+  let accepting = false;
+  let usedLetterHints = 0, usedWordHints = 0;
+
+  // ---------- Elements ----------
+  const $mode = document.getElementById("mode");
+  const $difficulty = document.getElementById("difficulty");
+  const $memorize = document.getElementById("memorize");
+  const $rounds = document.getElementById("rounds");
+  const $start = document.getElementById("start");
+  const $reset = document.getElementById("reset");
+  const $lyricsBox = document.getElementById("lyricsBox");
+  const $loadDefault = document.getElementById("loadDefault");
+  const $saveLyrics = document.getElementById("saveLyrics");
+
+  const $score = document.getElementById("score");
+  const $streak = document.getElementById("streak");
+  const $lives = document.getElementById("lives");
+  const $round = document.getElementById("round");
+  const $time = document.getElementById("time");
+  const $progress = document.getElementById("progress");
+
+  const $meta = document.getElementById("meta");
+  const $lyric = document.getElementById("lyric");
+  const $inputs = document.getElementById("inputs");
+  const $msg = document.getElementById("msg");
+  const $hintLetter = document.getElementById("hintLetter");
+  const $hintWord = document.getElementById("hintWord");
+  const $submit = document.getElementById("submit");
+  const $next = document.getElementById("next");
+
+  // ---------- Init ----------
+  // Load saved custom lines if any
+  (function init(){
+    const saved = localStorage.getItem("lm_lines");
+    if (saved) $lyricsBox.value = saved;
+    updateHUD();
+  })();
+
+  function updateHUD(){
+    $score.textContent = score;
+    $streak.textContent = streak;
+    $lives.textContent = lives;
+    $round.textContent = round;
+    $time.textContent = timeLeft;
+  }
+
+  function setButtons(state){
+    const on = state==="answer";
+    $hintLetter.disabled = !on;
+    $hintWord.disabled = !on;
+    $submit.disabled = !on;
+    $next.disabled = true;
+  }
+
+  function setMessage(text, cls=""){
+    $msg.className = "lm-msg " + cls;
+    $msg.textContent = text;
+  }
+
+  function setMeta(text){ $meta.textContent = text; }
+
+  function setProgress(pct){
+    $progress.style.width = Math.max(0, Math.min(100, pct)) + "%";
+  }
+
+  function parseLyricsBox(){
+    const lines = $lyricsBox.value.split("\n")
+      .map(s=>s.trim())
+      .filter(Boolean);
+    return lines.length ? lines : sampleLines;
+  }
+
+  function preparePool(){
+    ALL_LINES = parseLyricsBox();
+    // Shuffle
+    for (let i=ALL_LINES.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [ALL_LINES[i], ALL_LINES[j]] = [ALL_LINES[j], ALL_LINES[i]];
+    }
+  }
+
+  function resetAll(){
+    clearInterval(timerId); clearTimeout(memTimerId);
+    accepting = false;
+    round=0; score=0; streak=0; lives=3;
+    timeLeft=0; usedLetterHints=0; usedWordHints=0;
+    setProgress(0);
+    updateHUD();
+    setButtons("idle");
+    $inputs.hidden = true;
+    $inputs.innerHTML = "";
+    $lyric.classList.add("lm-ghost");
+    $lyric.innerHTML = "";
+    setMeta("Choose Start to begin.");
+    setMessage("");
+    $next.disabled = true;
+  }
+
+  function startGame(){
+    // Read controls
+    mode = $mode.value;
+    difficulty = $difficulty.value;
+    memorizeSec = Math.max(2, Math.min(10, parseInt($memorize.value||5,10)));
+    totalRounds = Math.max(3, Math.min(20, parseInt($rounds.value||8,10)));
+
+    resetAll();
+    preparePool();
+
+    if (mode==="speed"){ timeLeft = 30; } // 30s global
+    updateHUD();
+    nextRound();
+    if (mode==="speed"){
+      timerId = setInterval(()=>{
+        timeLeft--; updateHUD();
+        setProgress(((30-timeLeft)/30)*100);
+        if (timeLeft<=0){
+          clearInterval(timerId);
+          endGame("Time! Final score: " + score);
+        }
+      }, 1000);
+    }
+  }
+
+  function endGame(text){
+    accepting = false;
+    setButtons("idle");
+    $next.disabled = true;
+    setMessage(text, "lm-good");
+    setMeta("Game over");
+    $lyric.classList.add("lm-ghost");
+  }
+
+  function nextRound(){
+    if (mode!=="endless" && round >= totalRounds) {
+      return endGame("Nice run! Final score: " + score);
+    }
+    if (mode==="endless" && lives<=0){
+      return endGame("Out of lives. Final score: " + score + " | Best streak: " + streak);
+    }
+
+    // pick next line
+    if (ALL_LINES.length===0) preparePool();
+    const line = ALL_LINES.pop();
+    const tok = tokenize(line);
+    current = tok;
+    current.blanks = chooseBlanks(tok.words, difficulty);
+    usedLetterHints = 0; usedWordHints = 0;
+
+    round++; updateHUD();
+    setMessage("");
+    $inputs.hidden = true;
+    $inputs.innerHTML = "";
+    setButtons("idle");
+    $submit.disabled = true; $next.disabled = true;
+
+    // Memorize phase
+    const full = tok.words.map(w=>w.raw).join(" ");
+    $lyric.innerHTML = full;
+    $lyric.classList.remove("lm-ghost");
+    setMeta(tok.meta ? tok.meta : "Memorize…");
+
+    let sec = memorizeSec;
+    let countdown = setInterval(()=>{
+      setMeta((tok.meta ? tok.meta + " — " : "") + "Memorize: " + sec + "s");
+      sec--;
+      if (sec<0){
+        clearInterval(countdown);
+      }
+    }, 1000);
+
+    memTimerId = setTimeout(()=>{
+      // Turn into blanks + show inputs
+      $lyric.innerHTML = maskToHTML(tok.words, current.blanks);
+      $lyric.classList.remove("lm-ghost");
+      $inputs.hidden = false;
+      $inputs.appendChild(createInputs(tok.words, current.blanks));
+      $inputs.querySelector("input")?.focus();
+      accepting = true;
+      setButtons("answer");
+      setMeta(tok.meta ? tok.meta : "Fill in the blanks");
+      setProgress(mode==="speed" ? $progress.style.width : ((round-1)/(totalRounds||1))*100);
+    }, memorizeSec * 1000);
+  }
+
+  function evaluate(){
+    if (!accepting || !current) return;
+    const inputs = [...$inputs.querySelectorAll("input")];
+    const expected = current.blanks.map(i=>current.words[i].clean);
+    const given = inputs.map(inp=>normalize(inp.value));
+    // scoring
+    let correct = 0;
+    expected.forEach((w, idx)=>{ if (w===given[idx]) correct++; });
+
+    if (correct === expected.length){
+      const base = 100;
+      const hintPenalty = usedLetterHints*15 + usedWordHints*30;
+      const bonus = Math.min(40, (expected.join("").length)); // small len-based bonus
+      const s = Math.max(10, base + (streak*10) + bonus - hintPenalty);
+      score += s;
+      streak++;
+      setMessage("Correct! +" + s + " points", "lm-good");
+      // fill blanks visually
+      inputs.forEach((inp, j)=>{
+        const i = current.blanks[j];
+        const span = $lyric.querySelector(`.blank[data-i="${i}"]`);
+        if (span) span.textContent = current.words[i].raw;
+      });
+    } else {
+      lives--;
+      streak = 0;
+      // show correction
+      inputs.forEach((inp, j)=>{
+        const i = current.blanks[j];
+        const want = current.words[i].raw;
+        const got = inp.value;
+        const ok = normalize(got) === normalize(want);
+        inp.style.borderColor = ok ? "rgba(56,211,159,.9)" : "rgba(255,107,107,.9)";
+        if (!ok){
+          const span = $lyric.querySelector(`.blank[data-i="${i}"]`);
+          if (span) span.innerHTML = `<span style="color:#ff6b6b">${got||"…"}</span> → <strong>${want}</strong>`;
+        }
+      });
+      setMessage("Not quite. Lives −1", "lm-bad");
+    }
+
+    updateHUD();
+    accepting = false;
+    setButtons("idle");
+    $next.disabled = false;
+
+    if (mode==="endless" && lives<=0){
+      setTimeout(()=>endGame("Out of lives. Final score: " + score), 500);
+    }
+  }
+
+  function hintFirstLetter(){
+    if (!accepting || !current) return;
+    usedLetterHints++;
+    const inputs = [...$inputs.querySelectorAll("input")];
+    inputs.forEach((inp, j)=>{
+      if (!inp.value){
+        const i = current.blanks[j];
+        const first = current.words[i].raw.charAt(0);
+        inp.placeholder = first + "…";
+      }
+    });
+    setMessage("Hint used: first letter shown in placeholders (−15)", "");
+    updateHUD();
+  }
+
+  function hintRevealOne(){
+    if (!accepting || !current) return;
+    const inputs = [...$inputs.querySelectorAll("input")];
+    // find the first empty
+    const idx = inputs.findIndex(i => !i.value);
+    if (idx === -1) return;
+    usedWordHints++;
+    const i = current.blanks[idx];
+    const span = $lyric.querySelector(`.blank[data-i="${i}"]`);
+    if (span) span.textContent = current.words[i].raw;
+    inputs[idx].value = current.words[i].raw;
+    setMessage("Hint used: revealed one word (−30)", "");
+    updateHUD();
+  }
+
+  // ---------- Events ----------
+  $start.addEventListener("click", startGame);
+  $reset.addEventListener("click", resetAll);
+  $saveLyrics.addEventListener("click", ()=>{
+    const val = $lyricsBox.value.trim();
+    localStorage.setItem("lm_lines", val);
+    setMessage("Saved your lyric list locally. Press Start to use them.", "");
+  });
+  $loadDefault.addEventListener("click", ()=>{
+    $lyricsBox.value = sampleLines.join("\n");
+  });
+  $submit.addEventListener("click", evaluate);
+  $next.addEventListener("click", nextRound);
+  $hintLetter.addEventListener("click", hintFirstLetter);
+  $hintWord.addEventListener("click", hintRevealOne);
+
+  // keyboard shortcuts
+  document.addEventListener("keydown", (e)=>{
+    if (e.key === "Enter"){
+      if (accepting) evaluate(); else if (!$next.disabled) nextRound();
+    }
+    if (e.key === " " && !accepting && !$next.disabled){
+      e.preventDefault(); nextRound();
+    }
+    if (e.altKey && e.key.toLowerCase()==="l"){ e.preventDefault(); hintFirstLetter(); }
+    if (e.altKey && e.key.toLowerCase()==="w"){ e.preventDefault(); hintRevealOne(); }
+  });
+
+  // reflect control changes live (not strictly needed)
+  $mode.addEventListener("change", ()=>{ if ($mode.value==="endless") $rounds.disabled=true; else $rounds.disabled=false; });
+
+  </script>
 </body>
 </html>
