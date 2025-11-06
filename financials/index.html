@@ -47,4 +47,51 @@
 <script src="./api.js"></script>
 <script>
 const $t = document.getElementById('ticker');
-const $open = d
+const $open = document.getElementById('open');
+const $snap = document.getElementById('snap');
+const $warn = document.getElementById('keyWarn');
+
+if (__FMP.needKey()) {
+  $warn.textContent = "⚠️ Add your FMP API key in financials/api.js to enable all tickers.";
+}
+
+function card(tk, p, q, latestIS) {
+  const rev = latestIS?.revenue ?? 0;
+  const net = latestIS?.netIncome ?? 0;
+  const margin = rev ? (net/rev*100).toFixed(1) : "—";
+  return `
+    <a class="card" href="./statements.html?t=${encodeURIComponent(tk)}">
+      <h3>${tk.toUpperCase()} — ${p?.companyName ?? "Unknown"}</h3>
+      <p class="muted">${p?.sector ?? ""} ${p?.industry ? "• " + p.industry : ""}</p>
+      <div class="row" style="margin-top:8px">
+        <span class="pill">Price: <strong>${q?.price ?? "—"}</strong></span>
+        <span class="pill">MktCap: <strong>${q?.marketCap ? __FMP.fmtB(q.marketCap) : "—"}</strong></span>
+        <span class="pill">Rev: <strong>${rev ? __FMP.fmtB(rev) : "—"}</strong></span>
+        <span class="pill">Net Margin: <strong>${margin === "—" ? "—" : margin + "%"}</strong></span>
+      </div>
+    </a>`;
+}
+
+async function renderExamples() {
+  const defaults = ["AAPL","MSFT","NVDA","TSLA"];
+  $snap.innerHTML = "";
+  for (const tk of defaults) {
+    try {
+      const [p, q, is] = await Promise.all([
+        __FMP.profile(tk), __FMP.quote(tk), __FMP.income(tk,1)
+      ]);
+      $snap.insertAdjacentHTML("beforeend", card(tk, p, q, is?.[0]));
+    } catch (e) {
+      // fail silently on examples if no key
+    }
+  }
+}
+$open.onclick = ()=>{
+  const tk = $t.value.trim();
+  if (!tk) return;
+  location.href = `./statements.html?t=${encodeURIComponent(tk)}`;
+};
+renderExamples();
+</script>
+</body>
+</html>
