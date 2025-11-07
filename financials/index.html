@@ -1,357 +1,54 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Financials — Offline Single File</title>
-<link rel="stylesheet" href="style.css"/>
-<style>
-  /* Page-scoped styles (uses your global CSS variables if present) */
-  .wrap{max-width:1100px; margin:90px auto 40px; padding:0 20px}
-  .home-icon{position:fixed; top:14px; left:16px; text-decoration:none}
-  .home-icon:hover{background:rgba(255,255,255,.08); border-radius:50%}
-  .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
-  input[type="text"], input[type="file"], button{
-    padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.18);
-    background:transparent; color:var(--fg)
-  }
-  body:not(.dark) input[type="text"], body:not(.dark) input[type="file"], body:not(.dark) button{
-    border-color:#e2e6ef; color:#111
-  }
-  .btn{ cursor:pointer; border:1px solid var(--accent); background:var(--accent); color:#fff }
-  .muted{ color:var(--muted) }
-  .tabs{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 16px }
-  .tab{ padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.15); text-decoration:none; color:inherit }
-  .tab.active{ border-color:var(--accent) }
-  .hidden{ display:none !important }
-  .cards{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:12px }
-  .card{ background:var(--card); border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:14px }
-  .pill{ display:inline-block; padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.15) }
-  .sep{ opacity:.2; border:none; border-top:1px solid rgba(255,255,255,.12); margin:14px 0 }
-  .status{ font-size:14px; }
-  .ok{ color:#38d39f } .bad{ color:#ff6b6b }
-  table{ width:100%; border-collapse:collapse }
-  th,td{ padding:8px; border-bottom:1px solid rgba(255,255,255,.08); text-align:right }
-  th:first-child, td:first-child{ text-align:left }
-</style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Financial Visualizer</title>
+
+  <!-- use your site-wide theme -->
+  <link rel="stylesheet" href="../style.css"/>
+
+  <style>
+    /* Page-scoped styles: small and self-contained, uses your CSS variables */
+    .wrap{max-width:1100px;margin:90px auto 40px;padding:0 20px}
+    .home-icon{
+      position:fixed; top:14px; left:16px; text-decoration:none; font-size:22px;
+      padding:6px 10px; border-radius:12px; z-index:9999; color:var(--fg);
+      border:1px solid rgba(255,255,255,.14); background:var(--card);
+    }
+    body:not(.dark) .home-icon{ border-color:#e6e7ef; color:#111; background:#fff; }
+    .home-icon:hover{ opacity:.9 }
+
+    .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+    input[type="text"],button{
+      padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.18);
+      background:transparent; color:var(--fg)
+    }
+    body:not(.dark) input[type="text"], body:not(.dark) button{ border-color:#e2e6ef; color:#111 }
+    .btn{ cursor:pointer; border:1px solid var(--accent); background:var(--accent); color:#fff }
+
+    .muted{ color:var(--muted) }
+    .sep{ opacity:.2; border:none; border-top:1px solid rgba(255,255,255,.12); margin:14px 0 }
+
+    .tabs{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 16px }
+    .tab{ padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.15); text-decoration:none; color:inherit }
+    .tab.active{ border-color:var(--accent) }
+    .hidden{ display:none !important }
+
+    .cards{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:12px }
+    .card{ background:var(--card); border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:14px }
+    .pill{ display:inline-block; padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.15) }
+
+    table{ width:100%; border-collapse:collapse }
+    th,td{ padding:8px; border-bottom:1px solid rgba(255,255,255,.08); text-align:right }
+    th:first-child, td:first-child{ text-align:left }
+
+    .status{ font-size:14px; }
+    .ok{ color:#38d39f } .bad{ color:#ff6b6b }
+  </style>
+
+  <script defer src="app.js"></script>
 </head>
 <body class="dark">
-  <a class="home-icon" href="index.html" title="Back to Home">⌂</a>
-
-  <main class="wrap">
-    <h1>Financials (Offline)</h1>
-    <p class="muted">Type a ticker and click Open. Works offline with sample data. Upload a CSV to support any ticker(s).</p>
-
-    <div class="row" style="margin:8px 0">
-      <input id="ticker" type="text" placeholder="Ticker (e.g., AAPL)"/>
-      <button id="open" class="btn">Open</button>
-      <input id="csvFile" type="file" accept=".csv"/>
-      <button id="loadSample" class="btn" title="Load built-in AAPL/MSFT data">Load Sample</button>
-    </div>
-
-    <p id="status" class="status muted">Ready. Try AAPL or MSFT, or upload your CSV.</p>
-    <hr class="sep"/>
-
-    <nav class="tabs">
-      <a href="#" data-tab="overview" class="tab active">Overview</a>
-      <a href="#" data-tab="statements" class="tab">Statements</a>
-      <a href="#" data-tab="ratios" class="tab">Ratios</a>
-    </nav>
-
-    <!-- Overview -->
-    <section id="panel-overview">
-      <div id="ov"></div>
-      <h3 style="margin-top:14px">Quick Picks</h3>
-      <div class="cards" id="examples"></div>
-    </section>
-
-    <!-- Statements -->
-    <section id="panel-statements" class="hidden">
-      <div class="card"><h3>Income Statement (Annual)</h3><div id="inc"></div></div>
-      <div class="card" style="margin-top:12px"><h3>Balance Sheet (Annual)</h3><div id="bal"></div></div>
-      <div class="card" style="margin-top:12px"><h3>Cash Flow (Annual)</h3><div id="cf"></div></div>
-    </section>
-
-    <!-- Ratios -->
-    <section id="panel-ratios" class="hidden">
-      <div class="card"><h3>Key Ratios</h3><div id="rt"></div></div>
-    </section>
-  </main>
-
-  <script>
-  // ===== In-memory dataset (rows) =====
-  // Schema (CSV columns):
-  // ticker,companyName,sector,industry,price,marketCap,year,
-  // revenue,grossProfit,operatingIncome,netIncome,eps,
-  // cash,assets,liabilities,debt,equity,currAssets,currLiab,
-  // opCF,invCF,finCF,capex,freeCF,
-  // roe,roa,debtToEquity,assetTurnover,pe,ps
-  let ROWS = [];
-
-  // Built-in sample (AAPL, MSFT; 2021–2024)
-  const SAMPLE_CSV = `ticker,companyName,sector,industry,price,marketCap,year,revenue,grossProfit,operatingIncome,netIncome,eps,cash,assets,liabilities,debt,equity,currAssets,currLiab,opCF,invCF,finCF,capex,freeCF,roe,roa,debtToEquity,assetTurnover,pe,ps
-AAPL,Apple Inc.,Technology,Consumer Electronics,230.12,3600000000000,2024,383000000000,170000000000,115000000000,97000000000,6.46,30000000000,350000000000,290000000000,120000000000,60000000000,140000000000,120000000000,117000000000,-33000000000,-96000000000,-10000000000,107000000000,1.62,0.28,2.00,1.10,35.1,9.1
-AAPL,Apple Inc.,Technology,Consumer Electronics,230.12,3600000000000,2023,383285000000,170782000000,114301000000,97000000000,6.13,29965000000,352583000000,290437000000,111000000000,62146000000,143566000000,125481000000,110000000000,-22000000000,-100000000000,-11000000000,99000000000,1.56,0.27,1.79,1.09,30.4,7.8
-AAPL,Apple Inc.,Technology,Consumer Electronics,230.12,3600000000000,2022,394328000000,170782000000,119437000000,99803000000,6.11,23646000000,352755000000,302083000000,120000000000,50672000000,135405000000,153982000000,122151000000,-22743000000,-111000000000,-10708000000,111443000000,1.97,0.28,2.37,1.12,26.5,6.6
-AAPL,Apple Inc.,Technology,Consumer Electronics,230.12,3600000000000,2021,365817000000,152836000000,108949000000,94680000000,5.61,34940000000,351002000000,287912000000,124000000000,63090000000,134836000000,125481000000,104414000000,-14545000000,-93353000000,-11085000000,93329000000,1.50,0.27,1.97,1.04,28.5,7.3
-MSFT,Microsoft Corporation,Technology,Software Infrastructure,420.88,3100000000000,2024,245000000000,168000000000,106000000000,86000000000,9.65,35000000000,450000000000,220000000000,70000000000,230000000000,170000000000,120000000000,120000000000,-40000000000,-70000000000,-25000000000,95000000000,0.37,0.19,0.30,0.54,35.0,12.2
-MSFT,Microsoft Corporation,Technology,Software Infrastructure,420.88,3100000000000,2023,211000000000,146000000000,88000000000,72000000000,9.21,34500000000,411000000000,198000000000,68000000000,213000000000,160000000000,110000000000,89000000000,-36000000000,-65000000000,-24000000000,65000000000,0.34,0.18,0.32,0.51,33.0,10.7
-MSFT,Microsoft Corporation,Technology,Software Infrastructure,420.88,3100000000000,2022,198000000000,135000000000,83000000000,69000000000,9.20,31000000000,396000000000,191000000000,62000000000,205000000000,150000000000,105000000000,89000000000,-34000000000,-60000000000,-23000000000,66000000000,0.34,0.17,0.30,0.50,32.0,10.1
-MSFT,Microsoft Corporation,Technology,Software Infrastructure,420.88,3100000000000,2021,184000000000,118000000000,71000000000,61000000000,8.05,20500000000,333000000000,191000000000,60000000000,142000000000,130000000000,95000000000,76000000000,-26000000000,-52000000000,-21000000000,55000000000,0.43,0.18,0.42,0.55,36.0,11.3
-`;
-
-  // CSV → objects
-  function parseCSV(text){
-    const lines = text.replace(/\r/g,'').split('\n').filter(Boolean);
-    const header = lines.shift().split(',');
-    return lines.map(line=>{
-      const cols = splitCSV(line);
-      const row = {};
-      header.forEach((h,i)=> row[h.trim()] = cast(cols[i]));
-      return row;
-    });
-  }
-  // split by commas but respect quotes
-  function splitCSV(line){
-    const out=[]; let cur=''; let inQ=false;
-    for (let i=0;i<line.length;i++){
-      const c=line[i];
-      if (c==='\"'){ inQ=!inQ; continue; }
-      if (c===',' && !inQ){ out.push(cur); cur=''; continue; }
-      cur+=c;
-    }
-    out.push(cur);
-    return out;
-  }
-  function cast(v){
-    if (v==null) return null;
-    const t=v.trim();
-    if (t==='' || t.toLowerCase()==='null') return null;
-    if (/^-?\d+(\.\d+)?$/.test(t)) return Number(t);
-    return t;
-  }
-
-  // Helpers
-  const $ = s=>document.querySelector(s);
-  const $$ = s=>[...document.querySelectorAll(s)];
-  const Y = y=> String(y);
-  const fmtB = n => typeof n==="number" ? (Math.abs(n)>=1e9 ? (n/1e9).toFixed(1)+'B' : n.toLocaleString()) : '—';
-  const fmtC = n => typeof n==="number" ? n.toLocaleString() : '—';
-
-  // Elements
-  const els = {
-    ticker: $('#ticker'), open: $('#open'),
-    csvFile: $('#csvFile'), loadSample: $('#loadSample'),
-    status: $('#status'),
-    tabs: $$('.tab'),
-    pOverview: $('#panel-overview'), pStatements: $('#panel-statements'), pRatios: $('#panel-ratios'),
-    ov: $('#ov'), examples: $('#examples'),
-    inc: $('#inc'), bal: $('#bal'), cf: $('#cf'), rt: $('#rt')
-  };
-
-  // Tab switching
-  els.tabs.forEach(a=>{
-    a.addEventListener('click', e=>{
-      e.preventDefault();
-      els.tabs.forEach(x=>x.classList.remove('active'));
-      a.classList.add('active');
-      const t=a.dataset.tab;
-      els.pOverview.classList.toggle('hidden', t!=='overview');
-      els.pStatements.classList.toggle('hidden', t!=='statements');
-      els.pRatios.classList.toggle('hidden', t!=='ratios');
-    });
-  });
-
-  // Load sample
-  els.loadSample.addEventListener('click', ()=>{
-    ROWS = parseCSV(SAMPLE_CSV);
-    els.status.innerHTML = "Loaded sample offline dataset ✓  (AAPL, MSFT)";
-    renderExamples();
-  });
-
-  // Upload CSV
-  els.csvFile.addEventListener('change', async (e)=>{
-    const f = e.target.files?.[0];
-    if (!f){ return; }
-    const text = await f.text();
-    try{
-      const rows = parseCSV(text);
-      if (!rows.length) throw new Error("No rows");
-      ROWS = rows;
-      els.status.innerHTML = `Loaded CSV ✓ (${ROWS.length} rows)`;
-      renderExamples();
-    }catch(err){
-      console.error(err);
-      els.status.innerHTML = "<span class='bad'>Failed to parse CSV. Check columns and format.</span>";
-    }
-  });
-
-  // Quick picks (after data present)
-  function renderExamples(){
-    els.examples.innerHTML = "";
-    if (!ROWS.length) return;
-    const byTicker = {};
-    for (const r of ROWS){
-      const t = (r.ticker||'').toUpperCase();
-      byTicker[t] ??= [];
-      byTicker[t].push(r);
-    }
-    const top = Object.keys(byTicker).slice(0,6);
-    for (const t of top){
-      const latest = byTicker[t].sort((a,b)=>b.year-a.year)[0];
-      const rev = latest?.revenue, net = latest?.netIncome;
-      const margin = (rev && net) ? ((net/rev)*100).toFixed(1)+'%' : '—';
-      els.examples.insertAdjacentHTML('beforeend', `
-        <a class="card" href="#" onclick="document.getElementById('ticker').value='${t}'; openTicker(); return false;">
-          <h3>${t} — ${latest?.companyName ?? ''}</h3>
-          <p class="muted">${latest?.sector ?? ''}${latest?.industry ? ' • '+latest.industry : ''}</p>
-          <div class="row" style="margin-top:8px">
-            <span class="pill">Price: <strong>${latest?.price ?? '—'}</strong></span>
-            <span class="pill">MktCap: <strong>${latest?.marketCap ? fmtB(latest.marketCap) : '—'}</strong></span>
-            <span class="pill">Revenue: <strong>${rev ? fmtB(rev) : '—'}</strong></span>
-            <span class="pill">Net margin: <strong>${margin}</strong></span>
-          </div>
-        </a>
-      `);
-    }
-  }
-
-  // Open ticker
-  els.open.addEventListener('click', openTicker);
-  els.ticker.addEventListener('keydown', e=>{ if (e.key==='Enter') openTicker(); });
-
-  function openTicker(){
-    const tk = (els.ticker.value||'').trim().toUpperCase();
-    if (!tk){ els.status.innerHTML = "<span class='bad'>Enter a ticker.</span>"; return; }
-    if (!ROWS.length){
-      // auto-load sample if nothing present so the page "just works"
-      ROWS = parseCSV(SAMPLE_CSV);
-      renderExamples();
-      els.status.innerHTML = "No data loaded — using sample dataset.";
-    }
-    const rows = ROWS.filter(r => (r.ticker||'').toUpperCase() === tk);
-    if (!rows.length){
-      els.status.innerHTML = `<span class='bad'>Ticker ${tk} not found in current dataset.</span>`;
-      return;
-    }
-    renderCompany(tk, rows);
-  }
-
-  function renderCompany(tk, rows){
-    // Pick latest row for overview fields
-    const latest = rows.slice().sort((a,b)=>b.year-a.year)[0];
-
-    // Overview
-    const rev = latest?.revenue, net = latest?.netIncome;
-    const margin = (rev && net) ? ((net/rev)*100).toFixed(1)+'%' : '—';
-    els.ov.innerHTML = `
-      <div class="card">
-        <h2>${tk} — ${latest?.companyName ?? ''}</h2>
-        <p class="muted">${latest?.sector ?? ''}${latest?.industry ? ' • '+latest.industry : ''}</p>
-        <div class="row" style="margin-top:8px">
-          <span class="pill">Price: <strong>${latest?.price ?? '—'}</strong></span>
-          <span class="pill">MktCap: <strong>${latest?.marketCap ? fmtB(latest.marketCap) : '—'}</strong></span>
-          <span class="pill">Revenue: <strong>${rev ? fmtB(rev) : '—'}</strong></span>
-          <span class="pill">Net margin: <strong>${margin}</strong></span>
-        </div>
-      </div>
-    `;
-
-    // Build by year (desc)
-    const byYear = {};
-    rows.forEach(r => { byYear[r.year] = r; });
-    const years = Object.keys(byYear).sort((a,b)=>b-a); // newest → oldest
-
-    // Table helper
-    const table = (cols, rows) => {
-      const head = `<thead><tr><th>Metric</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>`;
-      const body = rows.map(([name,vals])=>`<tr><td>${name}</td>${vals.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('');
-      return `<table>${head}<tbody>${body}</tbody></table>`;
-    };
-    const V = (yr, key) => byYear[yr]?.[key];
-
-    // Income Statement
-    const incRows = [
-      ["Revenue",        years.map(y=>fmtC(V(y,'revenue')))],
-      ["Gross Profit",   years.map(y=>fmtC(V(y,'grossProfit')))],
-      ["Operating Income", years.map(y=>fmtC(V(y,'operatingIncome')))],
-      ["Net Income",     years.map(y=>fmtC(V(y,'netIncome')))],
-      ["EPS",            years.map(y=> (typeof V(y,'eps')==="number") ? V(y,'eps').toFixed(2) : '—')],
-      ["Net Margin",     years.map(y=>{
-        const r=V(y,'revenue'), n=V(y,'netIncome');
-        return (r&&n)?((n/r)*100).toFixed(1)+'%':'—';
-      })]
-    ];
-    els.inc.innerHTML = table(years, incRows);
-
-    // Balance Sheet
-    const balRows = [
-      ["Cash & Equivalents", years.map(y=>fmtC(V(y,'cash')))],
-      ["Total Assets",       years.map(y=>fmtC(V(y,'assets')))],
-      ["Total Liabilities",  years.map(y=>fmtC(V(y,'liabilities')))],
-      ["Total Debt",         years.map(y=>fmtC(V(y,'debt')))],
-      ["Shareholders' Equity", years.map(y=>fmtC(V(y,'equity')))],
-      ["Current Ratio",      years.map(y=>{
-        const ca=V(y,'currAssets'), cl=V(y,'currLiab');
-        const cr = (ca&&cl)? ca/cl : null;
-        return cr ? cr.toFixed(2) : '—';
-      })]
-    ];
-    els.bal.innerHTML = table(years, balRows);
-
-    // Cash Flow
-    const cfRows = [
-      ["Operating CF", years.map(y=>fmtC(V(y,'opCF')))],
-      ["Investing CF", years.map(y=>fmtC(V(y,'invCF')))],
-      ["Financing CF", years.map(y=>fmtC(V(y,'finCF')))],
-      ["CapEx",        years.map(y=>fmtC(V(y,'capex')))],
-      ["Free CF",      years.map(y=>{
-        const f=V(y,'freeCF');
-        if (typeof f==="number") return fmtC(f);
-        const op=V(y,'opCF')??0, cap=V(y,'capex')??0;
-        return fmtC(op - cap);
-      })]
-    ];
-    els.cf.innerHTML = table(years, cfRows);
-
-    // Ratios
-    const r = (key,fmt)=>
-      years.map(y=>{
-        const v=V(y,key);
-        if (v==null) return '—';
-        return fmt?fmt(v):v;
-      });
-    const ratios = [
-      ["Operating Margin", years.map(y=>{
-        const r=V(y,'revenue'), o=V(y,'operatingIncome');
-        return (r&&o)?((o/r)*100).toFixed(1)+'%':'—';
-      })],
-      ["Net Margin", years.map(y=>{
-        const r=V(y,'revenue'), n=V(y,'netIncome');
-        return (r&&n)?((n/r)*100).toFixed(1)+'%':'—';
-      })],
-      ["ROE", r('roe', v=>(v*100).toFixed(1)+'%')],
-      ["ROA", r('roa', v=>(v*100).toFixed(1)+'%')],
-      ["Debt / Equity", r('debtToEquity', v=>v.toFixed(2))],
-      ["Asset Turnover", r('assetTurnover', v=>v.toFixed(2))],
-      ["P/E", r('pe', v=>v.toFixed(1))],
-      ["P/S", r('ps', v=>v.toFixed(1))]
-    ];
-    els.rt.innerHTML = table(years, ratios);
-
-    // Switch to Statements after load
-    els.tabs.forEach(x=>x.classList.remove('active'));
-    document.querySelector('[data-tab="statements"]').classList.add('active');
-    els.pOverview.classList.add('hidden');
-    els.pStatements.classList.remove('hidden');
-    els.pRatios.classList.add('hidden');
-
-    els.status.innerHTML = `Loaded ${tk} from current dataset ✓`;
-  }
-
-  // Boot with sample so page is usable immediately
-  ROWS = parseCSV(SAMPLE_CSV);
-  renderExamples();
-  </script>
-</body>
-</html>
+  <!-- home always works; goes back to your root index.html -->
+  <a class="home-icon" href
