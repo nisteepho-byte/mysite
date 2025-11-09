@@ -11,42 +11,76 @@
     <a href="index.html" class="home-icon" title="Back to Home">⌂</a>
     <div class="header-text">
       <h1>Infinite Horizon</h1>
-      <p class="sub">Pure CSS • parallax mountains • aurora • sun rays • endless grid</p>
+      <p class="sub">CSS-only visual with scenes & speed presets — no JavaScript.</p>
     </div>
   </header>
 
   <main class="site-wrap">
-    <section class="hzn">
-      <!-- SKY STACK -->
-      <div class="hzn__sky">
-        <div class="hzn__gradient"></div>
-        <div class="hzn__stars"></div>
-        <div class="hzn__shooting"></div>
-        <div class="hzn__aurora"></div>
+    <!-- =============== CONTROLS (CSS-only) =============== -->
+    <!-- Scene radios -->
+    <input type="radio" name="scene" id="scene-neon" checked>
+    <input type="radio" name="scene" id="scene-dusk">
+    <input type="radio" name="scene" id="scene-night">
+    <!-- Speed radios -->
+    <input type="radio" name="spd" id="speed-slow">
+    <input type="radio" name="spd" id="speed-normal" checked>
+    <input type="radio" name="spd" id="speed-fast">
 
-        <div class="hzn__sun">
-          <div class="hzn__sun-core"></div>
-          <div class="hzn__sun-rays"></div>
-          <div class="hzn__sun-scan"></div>
+    <section class="hzn-panel">
+      <div class="hzn-controls card">
+        <div class="row">
+          <div class="group">
+            <div class="label">Scene</div>
+            <div class="pills">
+              <label for="scene-neon">Neon</label>
+              <label for="scene-dusk">Dusk</label>
+              <label for="scene-night">Night</label>
+            </div>
+          </div>
+          <div class="group">
+            <div class="label">Speed</div>
+            <div class="pills">
+              <label for="speed-slow">Slow</label>
+              <label for="speed-normal">Normal</label>
+              <label for="speed-fast">Fast</label>
+            </div>
+          </div>
         </div>
-
-        <div class="hzn__mtn hzn__mtn--far"></div>
-        <div class="hzn__mtn hzn__mtn--near"></div>
+        <p class="hint">Tip: switch your site theme; this adapts to light/dark automatically.</p>
       </div>
 
-      <!-- GROUND STACK -->
-      <div class="hzn__ground">
-        <div class="hzn__grid"></div>
-        <div class="hzn__road"></div>
-        <div class="hzn__glow"></div>
-      </div>
+      <!-- =============== HORIZON STAGE =============== -->
+      <section class="hzn-stage card">
+        <div class="hzn">
+          <!-- Sky stack -->
+          <div class="hzn__sky">
+            <div class="hzn__grad"></div>
+            <div class="hzn__stars"></div>
+            <div class="hzn__aurora"></div>
 
-      <div class="hzn__vignette"></div>
+            <div class="hzn__sun">
+              <div class="hzn__sun-core"></div>
+              <div class="hzn__sun-rays"></div>
+              <div class="hzn__sun-scan"></div>
+            </div>
+
+            <div class="hzn__mtn hzn__mtn--far"></div>
+            <div class="hzn__mtn hzn__mtn--near"></div>
+          </div>
+
+          <!-- Ground stack -->
+          <div class="hzn__ground">
+            <div class="hzn__grid"></div>
+            <div class="hzn__road"></div>
+            <div class="hzn__glow"></div>
+          </div>
+
+          <div class="hzn__vignette"></div>
+        </div>
+      </section>
+
+      <p class="hzn-caption">Pure CSS • organized controls • scene profiles • speed presets.</p>
     </section>
-
-    <p class="hzn__caption">
-      CSS only. Tweak speeds or colors via <code>--hzn-speed</code> &amp; palette vars.
-    </p>
   </main>
 </body>
 </html>
