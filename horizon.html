@@ -5,6 +5,78 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Infinite Horizon — Nick Isteepho</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+  /* Hide the raw radios so those blue dots at the top disappear */
+  input[type="radio"][name="scene"],
+  input[type="radio"][name="spd"]{
+    position:absolute; left:-9999px; appearance:none; pointer-events:none;
+  }
+
+  /* Overlay the controls on top-right of the stage */
+  .hzn-overlay{
+    position:absolute; top:14px; right:14px; z-index:20;
+    background: color-mix(in oklab, var(--card), transparent 18%);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:12px; padding:10px 12px;
+    backdrop-filter: blur(6px);
+    display:flex; gap:16px; align-items:center;
+  }
+  .hzn-overlay .label{ font-size:12px; color:var(--muted); margin-right:6px; }
+  .hzn-overlay .pills{ display:flex; gap:8px; }
+  .hzn-overlay .pills label{
+    padding:6px 10px; border:1px solid rgba(255,255,255,.14);
+    border-radius:999px; cursor:pointer; user-select:none; font-size:12px;
+    background: rgba(255,255,255,.03);
+  }
+  body:not(.dark) .hzn-overlay .pills label{ border-color:#e6e7ef; }
+
+  /* Active pills */
+  #scene-neon:checked ~ main .hzn-overlay label[for="scene-neon"],
+  #scene-dusk:checked ~ main .hzn-overlay label[for="scene-dusk"],
+  #scene-night:checked ~ main .hzn-overlay label[for="scene-night"],
+  #speed-slow:checked ~ main .hzn-overlay label[for="speed-slow"],
+  #speed-normal:checked ~ main .hzn-overlay label[for="speed-normal"],
+  #speed-fast:checked ~ main .hzn-overlay label[for="speed-fast"]{
+    border-color:var(--accent);
+  }
+
+  /* Slightly smaller sun + higher horizon for a cleaner comp */
+  .hzn__sun{ width:220px; top:38%; }
+  @media (max-width:520px){ .hzn__sun{ width:168px; top:42%; } }
+
+  /* Tighter mountains band */
+  .hzn__mtn--far{ bottom:46%; height:20%; }
+  .hzn__mtn--near{ bottom:41%; height:24%; }
+
+  /* Road: turn the big “slabs” into a slim animated center line */
+  .hzn__road{
+    width: 6%; mix-blend-mode: screen; filter: blur(.4px);
+    background:
+      linear-gradient(to bottom, transparent 0 8%, rgba(0,0,0,.22) 100%),
+      repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,.9) 0 8px,
+        rgba(255,255,255,0) 8px 24px
+      );
+    mask: linear-gradient(to bottom, black 35%, transparent 100%);
+    -webkit-mask: linear-gradient(to bottom, black 35%, transparent 100%);
+  }
+
+  /* Grid a touch thinner & calmer */
+  .hzn__grid{
+    background-size: 100% 36px, 70px 100%;
+    animation: hznScrollY calc(3.4s/var(--hzn-speed)) linear infinite,
+               hznScrollX calc(14s/var(--hzn-speed)) linear infinite;
+    filter: drop-shadow(0 0 8px color-mix(in oklab, var(--hzn-grid), #fff 18%));
+  }
+
+  /* Softer glow & vignette so the middle isn’t blown out */
+  .hzn__glow{ height:20%; top:-6%; background: radial-gradient(120% 80% at 50% 0%, rgba(143,211,255,.55), transparent 70%); }
+  .hzn__vignette{ background: radial-gradient(120% 85% at 50% 45%, rgba(0,0,0,0) 62%, rgba(0,0,0,.35) 100%); }
+
+  /* Move the control panel section off the page; we’ll use the overlay instead */
+  .hzn-panel .hzn-controls{ display:none; }
+</style>
 </head>
 <body class="dark">
   <header class="wrap culinary-header">
@@ -50,37 +122,50 @@
       </div>
 
       <!-- =============== HORIZON STAGE =============== -->
-      <section class="hzn-stage card">
-        <div class="hzn">
-          <!-- Sky stack -->
-          <div class="hzn__sky">
-            <div class="hzn__grad"></div>
-            <div class="hzn__stars"></div>
-            <div class="hzn__aurora"></div>
+   <section class="hzn-panel">
+  <section class="hzn-stage card">
+    <!-- Overlay controls (now float on the scene) -->
+    <div class="hzn-overlay">
+      <div class="label">Scene</div>
+      <div class="pills">
+        <label for="scene-neon">Neon</label>
+        <label for="scene-dusk">Dusk</label>
+        <label for="scene-night">Night</label>
+      </div>
+      <div class="label" style="margin-left:10px">Speed</div>
+      <div class="pills">
+        <label for="speed-slow">Slow</label>
+        <label for="speed-normal">Normal</label>
+        <label for="speed-fast">Fast</label>
+      </div>
+    </div>
 
-            <div class="hzn__sun">
-              <div class="hzn__sun-core"></div>
-              <div class="hzn__sun-rays"></div>
-              <div class="hzn__sun-scan"></div>
-            </div>
-
-            <div class="hzn__mtn hzn__mtn--far"></div>
-            <div class="hzn__mtn hzn__mtn--near"></div>
-          </div>
-
-          <!-- Ground stack -->
-          <div class="hzn__ground">
-            <div class="hzn__grid"></div>
-            <div class="hzn__road"></div>
-            <div class="hzn__glow"></div>
-          </div>
-
-          <div class="hzn__vignette"></div>
+    <div class="hzn">
+      <!-- (keep your existing sky/ground markup exactly as is) -->
+      <div class="hzn__sky">
+        <div class="hzn__grad"></div>
+        <div class="hzn__stars"></div>
+        <div class="hzn__aurora"></div>
+        <div class="hzn__sun">
+          <div class="hzn__sun-core"></div>
+          <div class="hzn__sun-rays"></div>
+          <div class="hzn__sun-scan"></div>
         </div>
-      </section>
+        <div class="hzn__mtn hzn__mtn--far"></div>
+        <div class="hzn__mtn hzn__mtn--near"></div>
+      </div>
+      <div class="hzn__ground">
+        <div class="hzn__grid"></div>
+        <div class="hzn__road"></div>
+        <div class="hzn__glow"></div>
+      </div>
+      <div class="hzn__vignette"></div>
+    </div>
+  </section>
 
-      <p class="hzn-caption">Pure CSS • organized controls • scene profiles • speed presets.</p>
-    </section>
+  <p class="hzn-caption">Pure CSS • organized overlay controls • scene profiles • speed presets.</p>
+</section>
+
   </main>
 </body>
 </html>
