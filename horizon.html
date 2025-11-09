@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title> Horizon</title>
+  <title>Infinite Horizon — Nick Isteepho</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="dark">
@@ -11,30 +11,41 @@
     <a href="index.html" class="home-icon" title="Back to Home">⌂</a>
     <div class="header-text">
       <h1>Infinite Horizon</h1>
-      <p class="sub">A CSS-only, 3D-perspective, endlessly moving sunrise.</p>
+      <p class="sub">Pure CSS • parallax mountains • aurora • sun rays • endless grid</p>
     </div>
   </header>
 
   <main class="site-wrap">
-    <section class="hzn-wrap">
-      <!-- SKY LAYER -->
-      <div class="hzn-sky">
-        <div class="hzn-stars"></div>
-        <div class="hzn-sun"></div>
-        <div class="hzn-scanlines"></div>
-        <div class="hzn-mountains"></div>
+    <section class="hzn">
+      <!-- SKY STACK -->
+      <div class="hzn__sky">
+        <div class="hzn__gradient"></div>
+        <div class="hzn__stars"></div>
+        <div class="hzn__shooting"></div>
+        <div class="hzn__aurora"></div>
+
+        <div class="hzn__sun">
+          <div class="hzn__sun-core"></div>
+          <div class="hzn__sun-rays"></div>
+          <div class="hzn__sun-scan"></div>
+        </div>
+
+        <div class="hzn__mtn hzn__mtn--far"></div>
+        <div class="hzn__mtn hzn__mtn--near"></div>
       </div>
 
-      <!-- GROUND / GRID (perspective) -->
-      <div class="hzn-ground">
-        <div class="hzn-grid"></div>
-        <div class="hzn-road"></div>
-        <div class="hzn-glow"></div>
+      <!-- GROUND STACK -->
+      <div class="hzn__ground">
+        <div class="hzn__grid"></div>
+        <div class="hzn__road"></div>
+        <div class="hzn__glow"></div>
       </div>
+
+      <div class="hzn__vignette"></div>
     </section>
 
-    <p class="hzn-caption">
-      Resize or switch themes to see it adapt.
+    <p class="hzn__caption">
+      CSS only. Tweak speeds or colors via <code>--hzn-speed</code> &amp; palette vars.
     </p>
   </main>
 </body>
