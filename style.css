@@ -460,50 +460,94 @@ body .culinary-header .home-icon { color: var(--fg); }
 /* Keep meal-plan horizontally scrollable on small screens */
 .plan-wrap{ scrollbar-width: thin; }
 
+/* =================== Organized Infinite Horizon (CSS-only) =================== */
+/* ── Panel + cards reuse your design language */
+.hzn-panel{ display:grid; gap:14px; }
+.card{
+  background:var(--card);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;
+  padding:14px;
+}
+body:not(.dark) .card{ border-color:#e6e7ef; }
 
-/* ========== INFINITE HORIZON (enhanced, pure CSS) ========== */
+/* Controls */
+.hzn-controls .row{ display:flex; flex-wrap:wrap; gap:20px; align-items:center; }
+.hzn-controls .group{ display:flex; flex-direction:column; gap:6px; }
+.hzn-controls .label{ font-weight:600; font-size:14px; color:var(--muted); }
+.hzn-controls .pills{ display:flex; gap:8px; }
+.hzn-controls .pills label{
+  padding:8px 12px; border:1px solid rgba(255,255,255,.14);
+  border-radius:999px; cursor:pointer; user-select:none;
+}
+body:not(.dark) .hzn-controls .pills label{ border-color:#e6e7ef; }
+.hzn-controls .hint{ margin:6px 0 0; color:var(--muted); }
+
+/* Active highlight via radios */
+input[type="radio"]{ position:absolute; opacity:0; pointer-events:none; }
+#scene-neon:checked ~ .hzn-panel .hzn-controls label[for="scene-neon"],
+#scene-dusk:checked ~ .hzn-panel .hzn-controls label[for="scene-dusk"],
+#scene-night:checked ~ .hzn-panel .hzn-controls label[for="scene-night"],
+#speed-slow:checked ~ .hzn-panel .hzn-controls label[for="speed-slow"],
+#speed-normal:checked ~ .hzn-panel .hzn-controls label[for="speed-normal"],
+#speed-fast:checked ~ .hzn-panel .hzn-controls label[for="speed-fast"]{
+  border-color:var(--accent);
+}
+
+/* Stage card sizing */
+.hzn-stage{ padding:0; overflow:hidden; }
+.hzn{ position:relative; height:min(62vh,640px); }
+
+/* ---------- Variables for look & speed ---------- */
 :root{
-  --hzn-sky-1:#071225;
+  /* default palette (Neon) */
+  --hzn-sky-1:#061225;
   --hzn-sky-2:#221a4a;
   --hzn-sky-3:#6a2d8f;
   --hzn-sun:#ffd07a;
   --hzn-grid:#86a9ff;
-  --hzn-mtn:#1b1833;
+  --hzn-mtn:#1b1835;
   --hzn-aurora-1:#6fffc7;
   --hzn-aurora-2:#8ac8ff;
-  --hzn-speed: 1; /* global speed multiplier: 0.8 slower, 1.2 faster */
+  --hzn-speed:1; /* 0.8 slow / 1 normal / 1.4 fast (overridden by radios) */
 }
 body:not(.dark){
-  --hzn-sky-1:#cfe2ff;
-  --hzn-sky-2:#fde4ff;
-  --hzn-sky-3:#ffe4b8;
-  --hzn-sun:#ff9f4d;
-  --hzn-grid:#0b63ff;
-  --hzn-mtn:#dad6ef;
-  --hzn-aurora-1:#7ef3c7;
-  --hzn-aurora-2:#9fd6ff;
+  --hzn-sky-1:#cfe2ff; --hzn-sky-2:#f7e4ff; --hzn-sky-3:#ffe1b7;
+  --hzn-sun:#ff9f4d;  --hzn-grid:#0b63ff;  --hzn-mtn:#dad6ef;
+  --hzn-aurora-1:#7ef3c7; --hzn-aurora-2:#9fd6ff;
 }
 
-/* Stage */
-.hzn{
-  position: relative;
-  height: min(72vh, 720px);
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0,0,0,.25);
+/* Scene profiles (CSS-only via radio → sibling) */
+#scene-neon:checked ~ .hzn-panel .hzn{
+  --hzn-sky-1:#061225; --hzn-sky-2:#221a4a; --hzn-sky-3:#6a2d8f;
+  --hzn-sun:#ffd07a; --hzn-grid:#86a9ff; --hzn-mtn:#1b1835;
+  --hzn-aurora-1:#6fffc7; --hzn-aurora-2:#8ac8ff;
+}
+#scene-dusk:checked ~ .hzn-panel .hzn{
+  --hzn-sky-1:#1a0f1a; --hzn-sky-2:#53233e; --hzn-sky-3:#e27d60;
+  --hzn-sun:#ffb36b; --hzn-grid:#f2a65a; --hzn-mtn:#2a1b2a;
+  --hzn-aurora-1:#ffa9a3; --hzn-aurora-2:#ffd08a;
+}
+#scene-night:checked ~ .hzn-panel .hzn{
+  --hzn-sky-1:#030913; --hzn-sky-2:#0b1430; --hzn-sky-3:#1b2a4a;
+  --hzn-sun:#aecbfa; --hzn-grid:#7aa2ff; --hzn-mtn:#0f1327;
+  --hzn-aurora-1:#3de0c1; --hzn-aurora-2:#68a7ff;
+}
+
+/* Speed presets */
+#speed-slow:checked   ~ .hzn-panel .hzn{ --hzn-speed:.8; }
+#speed-normal:checked ~ .hzn-panel .hzn{ --hzn-speed:1; }
+#speed-fast:checked   ~ .hzn-panel .hzn{ --hzn-speed:1.4; }
+
+/* ---------- SKY ---------- */
+.hzn__sky{ position:absolute; inset:0;
   background: linear-gradient(180deg,var(--hzn-sky-1),var(--hzn-sky-2) 55%,var(--hzn-sky-3) 100%);
 }
-.hzn__caption{ margin:12px 0 0; color:var(--muted); }
-
-/* SKY LAYERS */
-.hzn__sky{ position:absolute; inset:0; }
-
-/* smooth sky blend */
-.hzn__gradient{ position:absolute; inset:0;
-  background: radial-gradient(80% 55% at 50% 10%, rgba(255,255,255,.08), transparent 60%);
+.hzn__grad{ position:absolute; inset:0;
+  background: radial-gradient(90% 60% at 50% 10%, rgba(255,255,255,.10), transparent 60%);
 }
 
-/* Stars */
+/* subtle starfield */
 .hzn__stars{ position:absolute; inset:0;
   background:
     radial-gradient(1px 1px at 8% 12%, #fff 98%, transparent),
@@ -519,21 +563,7 @@ body:not(.dark){
 }
 @keyframes hznTwinkle{0%,100%{opacity:.55}50%{opacity:.35}}
 
-/* Shooting star */
-.hzn__shooting{ position:absolute; width:160px; height:2px; left:-20%; top:18%;
-  background: linear-gradient(90deg, transparent, #fff, transparent);
-  transform: rotate(-18deg);
-  opacity:.0; filter: drop-shadow(0 0 8px #fff);
-  animation: hznShoot calc(9s/var(--hzn-speed)) linear infinite;
-}
-@keyframes hznShoot{
-  0%   { left:-25%; top:15%; opacity:0; }
-  5%   { opacity:.9; }
-  25%  { left:75%; top:-5%; opacity:0; }
-  100% { left:75%; top:-5%; opacity:0; }
-}
-
-/* Aurora (soft ribbons) */
+/* aurora */
 .hzn__aurora{ position:absolute; left:-20%; right:-20%; top:-10%; height:55%;
   background:
     radial-gradient(60% 120% at 20% 50%, color-mix(in oklab, var(--hzn-aurora-1), transparent 60%), transparent 70%),
@@ -547,32 +577,25 @@ body:not(.dark){
   to  { transform: translateX(3%)  translateY(-2%) }
 }
 
-/* Sun cluster */
-.hzn__sun{ position:absolute; left:50%; top:40%; width: 320px; aspect-ratio:1/1; transform: translateX(-50%); }
-@media (max-width:520px){ .hzn__sun{ width:220px; top:44%; } }
-
+/* sun */
+.hzn__sun{ position:absolute; left:50%; top:42%; width: 300px; aspect-ratio:1/1; transform: translateX(-50%); }
+@media (max-width:520px){ .hzn__sun{ width:210px; top:46%; } }
 .hzn__sun-core{ position:absolute; inset:0; border-radius:50%;
   background:
-    radial-gradient(circle at 50% 50%, var(--hzn-sun) 0 50%, rgba(255,255,255,.0) 60%),
-    radial-gradient(circle at 50% 50%, rgba(255,195,90,.45), rgba(255,195,90,0) 65%);
+    radial-gradient(circle at 50% 50%, var(--hzn-sun) 0 52%, rgba(255,255,255,0) 60%),
+    radial-gradient(circle at 50% 50%, rgba(255,195,90,.45), rgba(255,195,90,0) 66%);
   filter: drop-shadow(0 0 24px rgba(255,195,90,.6));
 }
-
-/* rotating rays inside a circular mask */
 .hzn__sun-rays{ position:absolute; inset:-6%; border-radius:50%;
-  background:
-    repeating-conic-gradient(from 0deg,
+  background: repeating-conic-gradient(from 0deg,
       rgba(255,255,255,.16) 0 6deg,
       rgba(255,255,255,0)   6deg 14deg);
   mask: radial-gradient(circle at 50% 50%, black 62%, transparent 63%);
   -webkit-mask: radial-gradient(circle at 50% 50%, black 62%, transparent 63%);
-  mix-blend-mode: screen;
+  mix-blend-mode: screen; opacity:.7;
   animation: hznRays calc(24s/var(--hzn-speed)) linear infinite;
-  opacity:.7;
 }
 @keyframes hznRays{ to { transform: rotate(360deg); } }
-
-/* scanlines across the sun */
 .hzn__sun-scan{ position:absolute; inset:0; border-radius:50%;
   background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0 6px, rgba(0,0,0,.22) 6px 8px);
   mix-blend-mode: overlay; pointer-events:none;
@@ -580,7 +603,7 @@ body:not(.dark){
 }
 @keyframes hznScan{ from{ transform: translateY(-6px)} to{ transform: translateY(6px)} }
 
-/* Mountains: parallax via subtle horizontal drift */
+/* mountains */
 .hzn__mtn{ position:absolute; left:-5%; right:-5%; bottom:42%; height:26%; filter: blur(.2px); }
 .hzn__mtn--far{
   background:
@@ -601,12 +624,10 @@ body:not(.dark){
 @keyframes hznParallaxFar{ from{ background-position:0 0 } to{ background-position:200px 0 } }
 @keyframes hznParallaxNear{ from{ background-position:0 0 } to{ background-position:-300px 0 } }
 
-/* GROUND: perspective plane */
+/* ---------- GROUND ---------- */
 .hzn__ground{ position:absolute; left:0; right:0; bottom:0; height:58%;
   transform-origin: top center; transform: perspective(900px) rotateX(65deg);
 }
-
-/* Curved grid with fade to horizon (mask) */
 .hzn__grid{ position:absolute; inset:0; color:var(--hzn-grid);
   background:
     linear-gradient(to bottom, rgba(255,255,255,0) 96%, currentColor 97%, rgba(255,255,255,0) 100%),
@@ -616,7 +637,6 @@ body:not(.dark){
   animation: hznScrollY calc(3.1s/var(--hzn-speed)) linear infinite,
              hznScrollX calc(12s/var(--hzn-speed)) linear infinite;
   filter: drop-shadow(0 0 10px color-mix(in oklab, var(--hzn-grid), #fff 25%));
-  /* fade out near horizon + at bottom edge */
   mask: radial-gradient(150% 80% at 50% 0%,
         rgba(0,0,0,0) 0 12%, rgba(0,0,0,1) 22% 85%, rgba(0,0,0,0) 100%);
   -webkit-mask: radial-gradient(150% 80% at 50% 0%,
@@ -624,29 +644,20 @@ body:not(.dark){
 }
 @keyframes hznScrollY{ from{ background-position: 0 0, 0 0 } to{ background-position: 0 440px, 0 0 } }
 @keyframes hznScrollX{ from{ background-position: 0 0, 0 0 } to{ background-position: 0 0, -80px 0 } }
-
-/* Center road for depth */
 .hzn__road{ position:absolute; left:50%; top:0; bottom:0; width: 12%; transform: translateX(-50%);
   background:
     linear-gradient(to bottom, transparent 0 10%, rgba(0,0,0,.25) 100%),
     repeating-linear-gradient(to bottom, rgba(255,255,255,.85) 0 26px, transparent 26px 52px);
   mix-blend-mode: screen; filter: blur(.5px);
 }
-
-/* Horizon glow */
 .hzn__glow{ position:absolute; left:0; right:0; top:-8%; height: 26%;
   background: radial-gradient(120% 80% at 50% 0%, rgba(143,211,255,.7), transparent 70%);
   pointer-events:none;
 }
-
-/* Vignette for cinematic framing */
 .hzn__vignette{ position:absolute; inset:0;
-  background:
-    radial-gradient(120% 85% at 50% 45%, rgba(0,0,0,0) 60%, rgba(0,0,0,.45) 100%);
+  background: radial-gradient(120% 85% at 50% 45%, rgba(0,0,0,0) 60%, rgba(0,0,0,.45) 100%);
   pointer-events:none;
 }
 
-/* Home icon hover polish */
-.home-icon{ transition: background .2s ease, transform .15s ease; }
-.home-icon:hover{ background: rgba(255,255,255,0.10); transform: scale(1.04); }
-body:not(.dark) .home-icon:hover{ background: rgba(0,0,0,0.06); }
+/* Caption */
+.hzn-caption{ margin:8px 0 0; color:var(--muted); }
