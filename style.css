@@ -460,159 +460,193 @@ body .culinary-header .home-icon { color: var(--fg); }
 /* Keep meal-plan horizontally scrollable on small screens */
 .plan-wrap{ scrollbar-width: thin; }
 
-/* ========= Infinite Horizon (pure CSS) ========= */
+
+/* ========== INFINITE HORIZON (enhanced, pure CSS) ========== */
 :root{
-  /* you already have --accent, --bg, etc. We add a few tuned hues. */
-  --hzn-sky-top:#0a1020;
-  --hzn-sky-mid:#1e1a4a;
-  --hzn-sky-bot:#5c2b8a;
-  --hzn-sun:#ffcc66;
-  --hzn-grid:#7aa2ff;
-  --hzn-road:#111320;
-  --hzn-mountain:#1c1a33;
-  --hzn-glow:#8fd3ff;
+  --hzn-sky-1:#071225;
+  --hzn-sky-2:#221a4a;
+  --hzn-sky-3:#6a2d8f;
+  --hzn-sun:#ffd07a;
+  --hzn-grid:#86a9ff;
+  --hzn-mtn:#1b1833;
+  --hzn-aurora-1:#6fffc7;
+  --hzn-aurora-2:#8ac8ff;
+  --hzn-speed: 1; /* global speed multiplier: 0.8 slower, 1.2 faster */
 }
 body:not(.dark){
-  --hzn-sky-top:#cfe7ff;
-  --hzn-sky-mid:#f6d7ff;
-  --hzn-sky-bot:#ffe3b5;
-  --hzn-sun:#ff9e3d;
+  --hzn-sky-1:#cfe2ff;
+  --hzn-sky-2:#fde4ff;
+  --hzn-sky-3:#ffe4b8;
+  --hzn-sun:#ff9f4d;
   --hzn-grid:#0b63ff;
-  --hzn-road:#f5f7ff;
-  --hzn-mountain:#d6d1ea;
-  --hzn-glow:#8cc8ff;
+  --hzn-mtn:#dad6ef;
+  --hzn-aurora-1:#7ef3c7;
+  --hzn-aurora-2:#9fd6ff;
 }
 
-/* container */
-.hzn-wrap{
+/* Stage */
+.hzn{
   position: relative;
   height: min(72vh, 720px);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0,0,0,.25);
-  background: linear-gradient(180deg,var(--hzn-sky-top),var(--hzn-sky-mid) 50%,var(--hzn-sky-bot) 100%);
-  margin-top: 6px;
+  background: linear-gradient(180deg,var(--hzn-sky-1),var(--hzn-sky-2) 55%,var(--hzn-sky-3) 100%);
+}
+.hzn__caption{ margin:12px 0 0; color:var(--muted); }
+
+/* SKY LAYERS */
+.hzn__sky{ position:absolute; inset:0; }
+
+/* smooth sky blend */
+.hzn__gradient{ position:absolute; inset:0;
+  background: radial-gradient(80% 55% at 50% 10%, rgba(255,255,255,.08), transparent 60%);
 }
 
-/* STARFIELD (subtle) */
-.hzn-stars{
-  position:absolute; inset:0;
+/* Stars */
+.hzn__stars{ position:absolute; inset:0;
   background:
-    radial-gradient(1px 1px at 12% 20%, #fff8 98%, transparent 100%),
-    radial-gradient(1px 1px at 42% 8%,  #fff8 98%, transparent 100%),
-    radial-gradient(1px 1px at 70% 18%, #fff8 98%, transparent 100%),
-    radial-gradient(1px 1px at 84% 30%, #fff8 98%, transparent 100%),
-    radial-gradient(1px 1px at 26% 32%, #fff8 98%, transparent 100%),
-    radial-gradient(1px 1px at 58% 26%, #fff8 98%, transparent 100%),
-    radial-gradient(1px 1px at 78% 6%,  #fff8 98%, transparent 100%);
-  opacity:.5; filter: blur(.2px);
-  animation: hzn-twinkle 6s linear infinite;
+    radial-gradient(1px 1px at 8% 12%, #fff 98%, transparent),
+    radial-gradient(1px 1px at 16% 32%, #fff 98%, transparent),
+    radial-gradient(1px 1px at 28% 22%, #fff 98%, transparent),
+    radial-gradient(1px 1px at 42% 8%,  #fff 98%, transparent),
+    radial-gradient(1px 1px at 58% 26%, #fff 98%, transparent),
+    radial-gradient(1px 1px at 72% 16%, #fff 98%, transparent),
+    radial-gradient(1px 1px at 86% 30%, #fff 98%, transparent),
+    radial-gradient(1px 1px at 92% 12%, #fff 98%, transparent);
+  opacity:.55; filter: blur(.2px);
+  animation: hznTwinkle calc(6s/var(--hzn-speed)) linear infinite;
 }
-@keyframes hzn-twinkle {
-  0%,100%{ opacity:.55 } 50%{ opacity:.35 }
+@keyframes hznTwinkle{0%,100%{opacity:.55}50%{opacity:.35}}
+
+/* Shooting star */
+.hzn__shooting{ position:absolute; width:160px; height:2px; left:-20%; top:18%;
+  background: linear-gradient(90deg, transparent, #fff, transparent);
+  transform: rotate(-18deg);
+  opacity:.0; filter: drop-shadow(0 0 8px #fff);
+  animation: hznShoot calc(9s/var(--hzn-speed)) linear infinite;
+}
+@keyframes hznShoot{
+  0%   { left:-25%; top:15%; opacity:0; }
+  5%   { opacity:.9; }
+  25%  { left:75%; top:-5%; opacity:0; }
+  100% { left:75%; top:-5%; opacity:0; }
 }
 
-/* SUN */
-.hzn-sun{
-  position:absolute; left:50%; top:36%;
-  width: 280px; aspect-ratio:1/1; transform: translateX(-50%);
+/* Aurora (soft ribbons) */
+.hzn__aurora{ position:absolute; left:-20%; right:-20%; top:-10%; height:55%;
   background:
-    radial-gradient(circle at 50% 50%, var(--hzn-sun) 0 55%, rgba(255,204,102,0.0) 60%),
-    radial-gradient(circle at 50% 50%, rgba(255,180,90,.45), rgba(255,180,90,0) 60%);
-  filter: blur(.2px) drop-shadow(0 0 24px rgba(255,204,102,.45));
+    radial-gradient(60% 120% at 20% 50%, color-mix(in oklab, var(--hzn-aurora-1), transparent 60%), transparent 70%),
+    radial-gradient(60% 120% at 70% 35%, color-mix(in oklab, var(--hzn-aurora-2), transparent 55%), transparent 70%);
+  mix-blend-mode: screen;
+  filter: blur(12px) saturate(120%);
+  animation: hznAurora calc(22s/var(--hzn-speed)) ease-in-out infinite alternate;
 }
-@media (max-width: 520px){
-  .hzn-sun{ width: 200px; top: 40%; }
-}
-
-/* SUN scanlines (gives that retro vibe) */
-.hzn-scanlines{
-  position:absolute; left:50%; top:36%;
-  width: 280px; aspect-ratio:1/1; transform: translateX(-50%);
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(0,0,0,0) 0 6px,
-    rgba(0,0,0,.18) 6px 8px
-  );
-  border-radius:50%;
-  mix-blend-mode: overlay;
-  animation: hzn-scan 3.6s linear infinite;
-  pointer-events:none;
-}
-@keyframes hzn-scan {
-  from{ transform: translateX(-50%) translateY(-6px); }
-  to  { transform: translateX(-50%) translateY(6px);  }
+@keyframes hznAurora{
+  from{ transform: translateX(-3%) translateY(2%) }
+  to  { transform: translateX(3%)  translateY(-2%) }
 }
 
-/* MOUNTAINS: two layers built from gradients */
-.hzn-mountains{
-  position:absolute; left:0; right:0; bottom:40%;
-  height:26%;
+/* Sun cluster */
+.hzn__sun{ position:absolute; left:50%; top:40%; width: 320px; aspect-ratio:1/1; transform: translateX(-50%); }
+@media (max-width:520px){ .hzn__sun{ width:220px; top:44%; } }
+
+.hzn__sun-core{ position:absolute; inset:0; border-radius:50%;
   background:
-    /* far ridge */
-    linear-gradient( to top, transparent 0 60%, rgba(0,0,0,.25) 100%),
-    radial-gradient(120% 120% at 10% 100%, transparent 52%, var(--hzn-mountain) 53% 60%, transparent 61%),
-    radial-gradient(120% 120% at 40% 100%, transparent 50%, var(--hzn-mountain) 51% 60%, transparent 61%),
-    radial-gradient(120% 120% at 80% 100%, transparent 50%, var(--hzn-mountain) 51% 60%, transparent 61%),
-    /* near ridge */
-    radial-gradient(120% 120% at 25% 120%, transparent 48%, color-mix(in oklab, var(--hzn-mountain), #000 12%) 49% 58%, transparent 59%),
-    radial-gradient(120% 120% at 70% 120%, transparent 47%, color-mix(in oklab, var(--hzn-mountain), #000 12%) 48% 58%, transparent 59%);
-  filter: blur(.2px);
+    radial-gradient(circle at 50% 50%, var(--hzn-sun) 0 50%, rgba(255,255,255,.0) 60%),
+    radial-gradient(circle at 50% 50%, rgba(255,195,90,.45), rgba(255,195,90,0) 65%);
+  filter: drop-shadow(0 0 24px rgba(255,195,90,.6));
 }
 
-/* GROUND (3D plane) */
-.hzn-ground{
-  position:absolute; left:0; right:0; bottom:0; height:56%;
-  transform-origin: top center;
-  transform: perspective(900px) rotateX(65deg);
-}
-
-/* GRID lines (moves “toward” the viewer by animating background-position) */
-.hzn-grid{
-  position:absolute; inset:0;
+/* rotating rays inside a circular mask */
+.hzn__sun-rays{ position:absolute; inset:-6%; border-radius:50%;
   background:
-    /* horizontal lines */
-    linear-gradient(to bottom, rgba(255,255,255,.0) 96%, rgba(255,255,255,.22) 97%, rgba(255,255,255,.0) 100%),
-    /* vertical lines */
-    linear-gradient(to right, rgba(255,255,255,.0) 96%, rgba(255,255,255,.22) 97%, rgba(255,255,255,.0) 100%);
+    repeating-conic-gradient(from 0deg,
+      rgba(255,255,255,.16) 0 6deg,
+      rgba(255,255,255,0)   6deg 14deg);
+  mask: radial-gradient(circle at 50% 50%, black 62%, transparent 63%);
+  -webkit-mask: radial-gradient(circle at 50% 50%, black 62%, transparent 63%);
+  mix-blend-mode: screen;
+  animation: hznRays calc(24s/var(--hzn-speed)) linear infinite;
+  opacity:.7;
+}
+@keyframes hznRays{ to { transform: rotate(360deg); } }
+
+/* scanlines across the sun */
+.hzn__sun-scan{ position:absolute; inset:0; border-radius:50%;
+  background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0 6px, rgba(0,0,0,.22) 6px 8px);
+  mix-blend-mode: overlay; pointer-events:none;
+  animation: hznScan calc(3.6s/var(--hzn-speed)) linear infinite;
+}
+@keyframes hznScan{ from{ transform: translateY(-6px)} to{ transform: translateY(6px)} }
+
+/* Mountains: parallax via subtle horizontal drift */
+.hzn__mtn{ position:absolute; left:-5%; right:-5%; bottom:42%; height:26%; filter: blur(.2px); }
+.hzn__mtn--far{
+  background:
+    linear-gradient(to top, transparent 0 60%, rgba(0,0,0,.24) 100%),
+    radial-gradient(120% 120% at 10% 100%,  transparent 52%, var(--hzn-mtn) 53% 60%, transparent 61%),
+    radial-gradient(120% 120% at 40% 100%,  transparent 50%, var(--hzn-mtn) 51% 60%, transparent 61%),
+    radial-gradient(120% 120% at 80% 100%,  transparent 50%, var(--hzn-mtn) 51% 60%, transparent 61%);
+  animation: hznParallaxFar calc(32s/var(--hzn-speed)) linear infinite;
+  opacity:.95;
+}
+.hzn__mtn--near{
+  bottom:38%; height:30%;
+  background:
+    radial-gradient(120% 120% at 25% 120%, transparent 48%, color-mix(in oklab, var(--hzn-mtn), #000 12%) 49% 58%, transparent 59%),
+    radial-gradient(120% 120% at 70% 120%, transparent 47%, color-mix(in oklab, var(--hzn-mtn), #000 12%) 48% 58%, transparent 59%);
+  animation: hznParallaxNear calc(22s/var(--hzn-speed)) linear infinite reverse;
+}
+@keyframes hznParallaxFar{ from{ background-position:0 0 } to{ background-position:200px 0 } }
+@keyframes hznParallaxNear{ from{ background-position:0 0 } to{ background-position:-300px 0 } }
+
+/* GROUND: perspective plane */
+.hzn__ground{ position:absolute; left:0; right:0; bottom:0; height:58%;
+  transform-origin: top center; transform: perspective(900px) rotateX(65deg);
+}
+
+/* Curved grid with fade to horizon (mask) */
+.hzn__grid{ position:absolute; inset:0; color:var(--hzn-grid);
+  background:
+    linear-gradient(to bottom, rgba(255,255,255,0) 96%, currentColor 97%, rgba(255,255,255,0) 100%),
+    linear-gradient(to right,  rgba(255,255,255,0) 96%, currentColor 97%, rgba(255,255,255,0) 100%);
   background-size: 100% 44px, 80px 100%;
   background-position: 0 0, 0 0;
-  animation: hzn-scroll 3.2s linear infinite;
-  box-shadow: inset 0 0 0 999px color-mix(in oklab, var(--bg), transparent 70%);
-  color: var(--hzn-grid);
+  animation: hznScrollY calc(3.1s/var(--hzn-speed)) linear infinite,
+             hznScrollX calc(12s/var(--hzn-speed)) linear infinite;
+  filter: drop-shadow(0 0 10px color-mix(in oklab, var(--hzn-grid), #fff 25%));
+  /* fade out near horizon + at bottom edge */
+  mask: radial-gradient(150% 80% at 50% 0%,
+        rgba(0,0,0,0) 0 12%, rgba(0,0,0,1) 22% 85%, rgba(0,0,0,0) 100%);
+  -webkit-mask: radial-gradient(150% 80% at 50% 0%,
+        rgba(0,0,0,0) 0 12%, rgba(0,0,0,1) 22% 85%, rgba(0,0,0,0) 100%);
 }
-.hzn-grid{ filter: drop-shadow(0 0 10px color-mix(in oklab, var(--hzn-grid), #fff 25%)); }
-@keyframes hzn-scroll {
-  from { background-position: 0 0, 0 0; }
-  to   { background-position: 0 440px, -80px 0; } /* forward + slight parallax */
-}
+@keyframes hznScrollY{ from{ background-position: 0 0, 0 0 } to{ background-position: 0 440px, 0 0 } }
+@keyframes hznScrollX{ from{ background-position: 0 0, 0 0 } to{ background-position: 0 0, -80px 0 } }
 
-/* ROAD stripe (center line for depth cue) */
-.hzn-road{
-  position:absolute; left:50%; top:0; bottom:0; width: 12%;
-  transform: translateX(-50%);
+/* Center road for depth */
+.hzn__road{ position:absolute; left:50%; top:0; bottom:0; width: 12%; transform: translateX(-50%);
   background:
-    linear-gradient(to bottom, transparent 0 8%, rgba(0,0,0,.25) 100%),
+    linear-gradient(to bottom, transparent 0 10%, rgba(0,0,0,.25) 100%),
     repeating-linear-gradient(to bottom, rgba(255,255,255,.85) 0 26px, transparent 26px 52px);
-  mix-blend-mode: screen;
-  filter: blur(.5px);
+  mix-blend-mode: screen; filter: blur(.5px);
 }
 
-/* edge glow near horizon */
-.hzn-glow{
-  position:absolute; left:0; right:0; top:-10%; height: 26%;
-  background: radial-gradient(120% 80% at 50% 0%, color-mix(in oklab, var(--hzn-glow), transparent 50%), transparent 70%);
-  opacity:.6; pointer-events:none;
+/* Horizon glow */
+.hzn__glow{ position:absolute; left:0; right:0; top:-8%; height: 26%;
+  background: radial-gradient(120% 80% at 50% 0%, rgba(143,211,255,.7), transparent 70%);
+  pointer-events:none;
 }
 
-/* caption */
-.hzn-caption{
-  margin: 12px 0 0;
-  color: var(--muted);
+/* Vignette for cinematic framing */
+.hzn__vignette{ position:absolute; inset:0;
+  background:
+    radial-gradient(120% 85% at 50% 45%, rgba(0,0,0,0) 60%, rgba(0,0,0,.45) 100%);
+  pointer-events:none;
 }
 
-/* polish for home icon on dark/light */
+/* Home icon hover polish */
 .home-icon{ transition: background .2s ease, transform .15s ease; }
 .home-icon:hover{ background: rgba(255,255,255,0.10); transform: scale(1.04); }
 body:not(.dark) .home-icon:hover{ background: rgba(0,0,0,0.06); }
-
