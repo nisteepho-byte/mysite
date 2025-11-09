@@ -40,39 +40,64 @@
     border-color:var(--accent);
   }
 
-  /* Slightly smaller sun + higher horizon for a cleaner comp */
-  .hzn__sun{ width:220px; top:18%; }
-  @media (max-width:520px){ .hzn__sun{ width:168px; top:42%; } }
-
-  /* Tighter mountains band */
-  .hzn__mtn--far{ bottom:46%; height:20%; }
-  .hzn__mtn--near{ bottom:41%; height:24%; }
-
-  /* Road: turn the big “slabs” into a slim animated center line */
-  .hzn__road{
-    width: 6%; mix-blend-mode: screen; filter: blur(.4px);
-    background:
-      linear-gradient(to bottom, transparent 0 8%, rgba(0,0,0,.22) 100%),
-      repeating-linear-gradient(
-        to bottom,
-        rgba(255,255,255,.9) 0 8px,
-        rgba(255,255,255,0) 8px 24px
-      );
-    mask: linear-gradient(to bottom, black 35%, transparent 100%);
-    -webkit-mask: linear-gradient(to bottom, black 35%, transparent 100%);
+/* --- Sun Position --- */
+.hzn__sun {
+  width: 220px;
+  top: 15%;            /* was 38% — now much higher in sky */
+  left: 50%;
+  transform: translateX(-50%);
+}
+@media (max-width: 520px) {
+  .hzn__sun {
+    width: 160px;
+    top: 20%;
   }
+}
 
-  /* Grid a touch thinner & calmer */
-  .hzn__grid{
-    background-size: 100% 36px, 70px 100%;
-    animation: hznScrollY calc(3.4s/var(--hzn-speed)) linear infinite,
-               hznScrollX calc(14s/var(--hzn-speed)) linear infinite;
-    filter: drop-shadow(0 0 8px color-mix(in oklab, var(--hzn-grid), #fff 18%));
-  }
+/* --- Mountains / Horizon --- */
+.hzn__mtn--far {
+  bottom: 25%;         /* was ~46%, now lower for deeper horizon */
+  height: 18%;
+  opacity: 0.6;
+}
+.hzn__mtn--near {
+  bottom: 18%;         /* drop lower to match far horizon */
+  height: 24%;
+  opacity: 0.8;
+}
 
-  /* Softer glow & vignette so the middle isn’t blown out */
-  .hzn__glow{ height:20%; top:-6%; background: radial-gradient(120% 80% at 50% 0%, rgba(143,211,255,.55), transparent 70%); }
-  .hzn__vignette{ background: radial-gradient(120% 85% at 50% 45%, rgba(0,0,0,0) 62%, rgba(0,0,0,.35) 100%); }
+/* --- Ocean / Ground Plane --- */
+.hzn__ground {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40%;         /* lower and smaller ocean area */
+  overflow: hidden;
+  perspective: 900px;
+  transform-origin: center bottom;
+}
+
+/* --- Adjust grid perspective & vertical scaling --- */
+.hzn__grid {
+  background-size: 100% 40px, 70px 100%;
+  transform: rotateX(72deg) translateY(40px);
+  animation: hznScrollY calc(3.4s/var(--hzn-speed)) linear infinite,
+             hznScrollX calc(14s/var(--hzn-speed)) linear infinite;
+  opacity: 0.75;
+  filter: drop-shadow(0 0 8px color-mix(in oklab, var(--hzn-grid), #fff 20%));
+}
+
+/* --- Glow / Reflection --- */
+.hzn__glow {
+  height: 18%;
+  top: 4%;             /* raises the glow closer to sun */
+  background: radial-gradient(120% 80% at 50% 0%, rgba(255,220,160,.45), transparent 70%);
+}
+.hzn__vignette {
+  background: radial-gradient(120% 85% at 50% 30%, rgba(0,0,0,0) 62%, rgba(0,0,0,.35) 100%);
+}
+
 
   /* Move the control panel section off the page; we’ll use the overlay instead */
   .hzn-panel .hzn-controls{ display:none; }
